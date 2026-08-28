@@ -6,6 +6,7 @@ import { getPuzzle } from '../data/puzzles';
 import { useUser } from '../context/UserContext';
 import { useSession, startOrJoinSession } from '../hooks/useSession';
 import { getAllPeople } from '../utils/people';
+import { difficultyClass } from '../utils/difficultyClass';
 import GridBoard from '../components/GridBoard';
 import SuspectPalette from '../components/SuspectPalette';
 import ClueList from '../components/ClueList';
@@ -52,7 +53,8 @@ export default function PuzzleRoom() {
 
   const {
     session, toggleLetter, setLetterForCells, toggleX, eraseCell, eraseCells,
-    fixPerson, submitAnswer, restartSession,
+    erasePersonFromCell, erasePersonFromCells,
+    fixPerson, submitAnswer, restartSession, toggleUsedClue,
   } = useSession(sessionId, user);
 
   const people = useMemo(() => (puzzle ? getAllPeople(puzzle) : []), [puzzle]);
@@ -68,11 +70,17 @@ export default function PuzzleRoom() {
   }
 
   const n = puzzle.grid_size;
-  const fixedForActive = activePerson ? session?.fixed?.[activePerson.name] : null;
 
+  // Erase tool: if a suspect/victim chip is selected, erase only that
+  // person's letter from the touched cells; otherwise clear the whole cell
+  // (letters + X).
   const handleApplyCell = (r, c, add) => {
     if (tool === 'x') { if (!!session?.marks?.[`${r}_${c}`]?.x !== add) toggleX(r, c); return; }
-    if (tool === 'erase') { eraseCell(r, c); return; }
+    if (tool === 'erase') {
+      if (activePerson) erasePersonFromCell(r, c, activePerson.name);
+      else eraseCell(r, c);
+      return;
+    }
     if (tool === 'mark' && activePerson) {
       const has = (session?.marks?.[`${r}_${c}`]?.letters || []).includes(activePerson.name);
       if (has !== add) toggleLetter(r, c, activePerson.name);
@@ -83,29 +91,22 @@ export default function PuzzleRoom() {
   const colCells = (c) => Array.from({ length: n }, (_, r) => [r, c]);
 
   const handleApplyRow = (r) => {
-    if (tool === 'erase') return eraseCells(rowCells(r));
+    if (tool === 'erase') {
+      return activePerson ? erasePersonFromCells(rowCells(r), activePerson.name) : eraseCells(rowCells(r));
+    }
     if (tool === 'mark' && activePerson) return setLetterForCells(rowCells(r), activePerson.name, true);
   };
   const handleApplyCol = (c) => {
-    if (tool === 'erase') return eraseCells(colCells(c));
+    if (tool === 'erase') {
+      return activePerson ? erasePersonFromCells(colCells(c), activePerson.name) : eraseCells(colCells(c));
+    }
     if (tool === 'mark' && activePerson) return setLetterForCells(colCells(c), activePerson.name, true);
   };
 
-  const canFix = activePerson && tool === 'mark';
-
-  const handleFix = () => {
+  // Long-press a cell (while a suspect/victim is selected in Mark mode) to
+  // fix them there directly.
+  const handleFixAt = (r, c) => {
     if (!activePerson) return;
-    // Fix wherever the person currently has exactly one candidate cell,
-    // otherwise ask the player to tap the exact cell first.
-    const marks = session?.marks || {};
-    const candidates = Object.entries(marks)
-      .filter(([, m]) => (m.letters || []).includes(activePerson.name))
-      .map(([key]) => key.split('_').map(Number));
-    if (candidates.length !== 1) {
-      alert('Mark exactly one cell for this person before fixing (tap that single cell first).');
-      return;
-    }
-    const [r, c] = candidates[0];
     fixPerson(activePerson.name, r, c, n);
   };
 
@@ -132,7 +133,7 @@ export default function PuzzleRoom() {
 
       <div className="room-meta">
         <span>{n}×{n}</span>
-        <span className={`difficulty ${puzzle.difficulty}`}>{puzzle.difficulty}</span>
+        <span className={`difficulty ${difficultyClass(puzzle.difficulty)}`}>{puzzle.difficulty}</span>
         <ConnectedPlayers players={session?.players} currentUserId={user.id} />
       </div>
 
@@ -146,6 +147,7 @@ export default function PuzzleRoom() {
           onApplyCell={handleApplyCell}
           onApplyRow={handleApplyRow}
           onApplyCol={handleApplyCol}
+          onFixAt={handleFixAt}
         />
 
         <SuspectPalette
@@ -154,11 +156,9 @@ export default function PuzzleRoom() {
           setActivePerson={setActivePerson}
           tool={tool}
           setTool={setTool}
-          canFix={canFix}
-          onFix={handleFix}
         />
 
-        <ClueList puzzle={puzzle} />
+        <ClueList puzzle={puzzle} usedClues={session?.usedClues} onToggleUsed={toggleUsedClue} />
 
         <div className="submit-row">
           <button

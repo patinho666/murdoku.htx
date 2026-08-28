@@ -1,12 +1,13 @@
+@import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@400;600;700;800&display=swap');
 * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 html, body, #root { height: 100%; margin: 0; }
 body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-family: 'Nunito', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   background: #0f172a;
   color: #0f172a;
 }
 button { font: inherit; cursor: pointer; }
-h1, h2, h3 { margin: 0.2em 0; }
+h1, h2, h3 { margin: 0.2em 0; font-family: 'Fredoka', 'Nunito', sans-serif; }
 
 /* ---------- Login ---------- */
 .login-screen {
@@ -36,10 +37,20 @@ h1, h2, h3 { margin: 0.2em 0; }
 .meta { display: flex; gap: 8px; flex-wrap: wrap; font-size: 12px; margin-top: 6px; }
 .meta span { padding: 3px 8px; border-radius: 999px; background: #f1f5f9; }
 .difficulty.easy { background: #dcfce7; color: #166534; }
+.difficulty.very-easy { background: #e0f2fe; color: #075985; }
 .difficulty.medium { background: #fef9c3; color: #854d0e; }
 .difficulty.hard { background: #fee2e2; color: #991b1b; }
 .status.completed { background: #dcfce7; color: #166534; }
 .status.in_progress { background: #fef3c7; color: #92400e; }
+
+.join-form { display: flex; gap: 8px; margin-bottom: 18px; }
+.join-form input {
+  flex: 1; padding: 10px 12px; border-radius: 10px; border: 1px solid #cbd5e1; font-size: 14px;
+}
+.join-form button {
+  background: #0f172a; color: white; border: none; border-radius: 10px; padding: 10px 16px; font-weight: 700;
+}
+.join-form button:disabled { opacity: 0.4; }
 
 /* ---------- Room ---------- */
 .room-screen { background: #0f172a; min-height: 100vh; color: white; padding-bottom: 40px; }
@@ -58,34 +69,68 @@ h1, h2, h3 { margin: 0.2em 0; }
 .board-wrap { width: 100%; display: flex; justify-content: center; touch-action: none; }
 .board-grid {
   display: grid;
-  grid-template-columns: 28px repeat(var(--n), 1fr);
-  grid-template-rows: 28px repeat(var(--n), 1fr);
+  grid-template-columns: 26px repeat(var(--n), 1fr);
+  grid-template-rows: 26px repeat(var(--n), 1fr);
   width: min(94vw, 420px);
   aspect-ratio: 1;
-  gap: 2px;
-  background: #1e293b;
-  padding: 4px;
-  border-radius: 10px;
+  gap: 0;
+  background: #0f172a;
+  padding: 6px;
+  border-radius: 16px;
+  border: 3px solid #0f172a;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.35);
 }
 .corner { background: transparent; }
 .col-handle, .row-handle {
-  background: #334155; color: #cbd5e1; border: none; border-radius: 4px; font-size: 11px;
+  background: #334155; color: #e2e8f0; border: none; border-radius: 6px; font-size: 11px;
+  margin: 1px;
 }
 .cell {
-  position: relative; border-radius: 4px; overflow: hidden;
+  position: relative; overflow: hidden;
   display: flex; align-items: center; justify-content: center;
   user-select: none;
+  border-style: solid;
+  border-color: #14213d;
+  border-top-width: 1px;
+  border-left-width: 1px;
 }
-.cell-object { position: absolute; font-size: 60%; opacity: 0.85; top: 2px; left: 2px; }
+.cell-blocked {
+  filter: saturate(0.5) brightness(0.75);
+  background-image: repeating-linear-gradient(
+    45deg, rgba(0,0,0,0.14) 0 6px, transparent 6px 12px
+  );
+}
+.terrain-badge {
+  position: absolute; top: 2px; right: 2px; font-size: 9px; opacity: 0.8; line-height: 1;
+}
+.cell-object {
+  position: absolute; top: 2px; left: 2px; display: flex; align-items: center; justify-content: center;
+}
+.cell-object-icon {
+  display: flex; align-items: center; justify-content: center;
+  width: 20px; height: 20px; font-size: 12px;
+  background: rgba(255,255,255,0.85); border-radius: 6px;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.25);
+}
+.area-label {
+  position: absolute; left: 3px; bottom: 2px; right: 3px;
+  font-family: 'Fredoka', sans-serif; font-weight: 700; font-size: 8.5px; letter-spacing: 0.02em;
+  color: #fff; text-transform: uppercase; line-height: 1.05;
+  text-shadow: -1px -1px 0 #0f172a, 1px -1px 0 #0f172a, -1px 1px 0 #0f172a, 1px 1px 0 #0f172a, 0 1px 2px rgba(0,0,0,0.4);
+  pointer-events: none; z-index: 2;
+}
 .cell-slots {
   position: absolute; inset: 0; display: grid;
-  grid-template-columns: repeat(3, 1fr); grid-template-rows: repeat(3, 1fr);
 }
-.cell-slot { display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 800; }
-.cell-x { color: #dc2626; font-size: 22px; font-weight: 900; }
+.cell-slot { display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 800; line-height: 1; }
+.cell-x {
+  color: #000; font-size: 24px; font-weight: 900; opacity: 0.85;
+}
+.cell.cell-crossed { filter: brightness(0.82) saturate(0.7); }
 .cell-fixed {
-  position: absolute; inset: 2px; border-radius: 4px; color: white; font-weight: 900;
+  position: absolute; inset: 2px; border-radius: 6px; color: white; font-weight: 900;
   display: flex; align-items: center; justify-content: center; font-size: 18px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.35); z-index: 3;
 }
 
 /* ---------- Palette ---------- */
@@ -94,14 +139,17 @@ h1, h2, h3 { margin: 0.2em 0; }
 .person-chip { border: 2px solid; border-radius: 999px; padding: 6px 10px; font-size: 12px; background: transparent; color: white; }
 .tool { background: #1e293b; color: #cbd5e1; border: none; border-radius: 8px; padding: 8px 10px; font-size: 12px; }
 .tool.active { background: #2563eb; color: white; }
-.tool.fix { background: #7c3aed; color: white; }
-.tool.fix:disabled, .tool:disabled { opacity: 0.4; }
-.palette-hint { font-size: 12px; color: #94a3b8; min-height: 16px; }
+.tool:disabled { opacity: 0.4; }
+.palette-hint { font-size: 12px; color: #94a3b8; min-height: 32px; }
 
 /* ---------- Clues ---------- */
 .clue-list { width: min(94vw, 420px); background: #1e293b; border-radius: 10px; padding: 12px 14px; font-size: 13px; }
-.clue-list ul { padding-left: 18px; margin: 4px 0 10px; }
-.clue-list li { margin-bottom: 4px; }
+.clue-list ul { list-style: none; padding-left: 0; margin: 4px 0 10px; }
+.clue-list li { margin-bottom: 6px; }
+.clue-list label { display: flex; align-items: flex-start; gap: 8px; cursor: pointer; }
+.clue-list input[type="checkbox"] { margin-top: 3px; flex-shrink: 0; width: 15px; height: 15px; }
+.clue-list li.clue-used { color: #64748b; }
+.clue-list li.clue-used span { text-decoration: line-through; }
 
 /* ---------- Submit ---------- */
 .submit-row { display: flex; gap: 10px; width: min(94vw, 420px); }

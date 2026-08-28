@@ -1,21 +1,34 @@
-import { useRef, useCallback } from 'react';
-import { TERRAIN_COLOR } from '../data/objectLibrary';
+import { useRef } from 'react';
 import { cellKey } from '../utils/cellKey';
+import { buildAreaLayout } from '../utils/areaLayout';
+import { buildBlockedCellSet } from '../utils/blocking';
 import CellMarks from './CellMarks';
 
 const OBJECT_ICON = {
   rock: '🪨', door: '🚪', chair: '🪑', carpet: '🟫', shark: '🦈', box: '📦',
   boat: '🛶', rowboat: '🚣', 'lily pad': '🌸', crocodile: '🐊', shrub: '🌿',
-  flag: '🚩', tree: '🌲', barrel: '🛢️',
+  flag: '🚩', tree: '🌲', barrel: '🛢️', bed: '🛏️', table: '🍽️', shelf: '📚',
+  trashcan: '🗑️', safe: '🔒', statue: '🗿', TV: '📺', painting: '🖼️',
+  plant: '🪴', flowers: '💐', bonsai: '🌳', camera: '📷', easel: '🎨',
+  register: '🧾', present: '🎁', 'teddy bear': '🧸', cactus: '🌵',
+  bear: '🐻', boar: '🐗', lion: '🦁', elephant: '🐘', penguin: '🐧',
+  horse: '🐴', car: '🚗', 'golf cart': '🛺', puddle: '💧', 'golf tee': '⛳',
 };
+
+const LONG_PRESS_MS = 550;
+const MOVE_CANCEL_PX = 10;
 
 export default function GridBoard({
   puzzle, session, people, activePerson, tool,
-  onApplyCell, onApplyRow, onApplyCol,
+  onApplyCell, onApplyRow, onApplyCol, onFixAt,
 }) {
   const n = puzzle.grid_size;
   const boardRef = useRef(null);
   const dragState = useRef(null);
+  const pressState = useRef(null);
+
+  const { colorByArea, areaByCell, labelAnchor } = buildAreaLayout(puzzle);
+  const blocked = buildBlockedCellSet(puzzle);
 
   const terrainByCell = {};
   for (const t of puzzle.terrain) terrainByCell[cellKey(t.cell[0], t.cell[1])] = t.type;
@@ -36,16 +49,6 @@ export default function GridBoard({
     return [Number(target.dataset.r), Number(target.dataset.c)];
   };
 
-  const startDrag = useCallback((r, c) => {
-    const key = cellKey(r, c);
-    const mark = session?.marks?.[key];
-    let add = true;
-    if (tool === 'x') add = !mark?.x;
-    else if (tool === 'mark' && activePerson) add = !(mark?.letters || []).includes(activePerson.name);
-    dragState.current = { add, touched: new Set() };
-    applyToCell(r, c, add);
-  }, [session, tool, activePerson]);
-
   const applyToCell = (r, c, add) => {
     const key = `${r},${c}`;
     if (dragState.current.touched.has(key)) return;
@@ -53,19 +56,71 @@ export default function GridBoard({
     onApplyCell(r, c, add);
   };
 
+  const beginDrag = (r, c) => {
+    const key = cellKey(r, c);
+    const mark = session?.marks?.[key];
+    let add = true;
+    if (tool === 'x') add = !mark?.x;
+    else if (tool === 'erase') add = true;
+    else if (tool === 'mark' && activePerson) add = !(mark?.letters || []).includes(activePerson.name);
+    dragState.current = { add, touched: new Set() };
+    applyToCell(r, c, add);
+  };
+
   const handlePointerDown = (e, r, c) => {
+    if (blocked.has(cellKey(r, c))) return;
     e.preventDefault();
     boardRef.current?.setPointerCapture?.(e.pointerId);
-    startDrag(r, c);
+    const canLongPressFix = tool === 'mark' && !!activePerson && !!onFixAt;
+    pressState.current = {
+      r, c, x: e.clientX, y: e.clientY, moved: false, longPressed: false, dragStarted: false,
+    };
+    if (canLongPressFix) {
+      pressState.current.timer = setTimeout(() => {
+        if (pressState.current && !pressState.current.moved) {
+          pressState.current.longPressed = true;
+          onFixAt(r, c);
+        }
+      }, LONG_PRESS_MS);
+    }
   };
 
   const handlePointerMove = (e) => {
-    if (!dragState.current) return;
-    const found = cellFromPoint(e.clientX, e.clientY);
-    if (found) applyToCell(found[0], found[1], dragState.current.add);
+    if (dragState.current) {
+      const found = cellFromPoint(e.clientX, e.clientY);
+      if (found && !blocked.has(cellKey(found[0], found[1]))) applyToCell(found[0], found[1], dragState.current.add);
+      return;
+    }
+    if (!pressState.current) return;
+    const dx = e.clientX - pressState.current.x;
+    const dy = e.clientY - pressState.current.y;
+    if (Math.hypot(dx, dy) > MOVE_CANCEL_PX) {
+      pressState.current.moved = true;
+      if (pressState.current.timer) clearTimeout(pressState.current.timer);
+      if (!pressState.current.longPressed && !pressState.current.dragStarted) {
+        pressState.current.dragStarted = true;
+        beginDrag(pressState.current.r, pressState.current.c);
+      }
+    }
   };
 
   const handlePointerUp = () => {
+    const p = pressState.current;
+    if (p) {
+      if (p.timer) clearTimeout(p.timer);
+      if (!p.longPressed && !p.dragStarted) {
+        // Simple tap, no movement, released before the long-press fired.
+        beginDrag(p.r, p.c);
+      }
+    }
+    pressState.current = null;
+    dragState.current = null;
+  };
+
+  const handlePointerCancel = () => {
+    const p = pressState.current;
+    if (p?.timer) clearTimeout(p.timer);
+    pressState.current = null;
     dragState.current = null;
   };
 
@@ -77,13 +132,11 @@ export default function GridBoard({
         style={{ '--n': n }}
         onPointerMove={handlePointerMove}
         onPointerUp={handlePointerUp}
-        onPointerCancel={handlePointerUp}
+        onPointerCancel={handlePointerCancel}
       >
         <div className="corner" />
         {Array.from({ length: n }).map((_, c) => (
-          <button key={`colh-${c}`} className="col-handle" onClick={() => onApplyCol(c)}>
-            ▾
-          </button>
+          <button key={`colh-${c}`} className="col-handle" onClick={() => onApplyCol(c)}>▾</button>
         ))}
         {Array.from({ length: n }).map((_, r) => (
           <div className="row-fragment" key={`row-${r}`} style={{ display: 'contents' }}>
@@ -92,16 +145,34 @@ export default function GridBoard({
               const key = cellKey(r, c);
               const terrain = terrainByCell[key] || 'floor';
               const obj = objectByCell[key];
+              const isBlocked = blocked.has(key);
+              const isCrossed = !!session?.marks?.[key]?.x;
+              const areaName = areaByCell[key];
+              const label = labelAnchor[key];
+              const borderRight = c === n - 1 || areaByCell[cellKey(r, c + 1)] !== areaName;
+              const borderBottom = r === n - 1 || areaByCell[cellKey(r + 1, c)] !== areaName;
               return (
                 <div
                   key={key}
                   data-cell data-r={r} data-c={c}
-                  className="cell"
-                  style={{ background: TERRAIN_COLOR[terrain] || '#eee' }}
+                  className={`cell${isBlocked ? ' cell-blocked' : ''}${isCrossed ? ' cell-crossed' : ''}`}
+                  style={{
+                    background: colorByArea[areaName] || '#e2e8f0',
+                    borderRightWidth: borderRight ? 3 : 1,
+                    borderBottomWidth: borderBottom ? 3 : 1,
+                  }}
                   onPointerDown={(e) => handlePointerDown(e, r, c)}
                 >
-                  {obj && <span className="cell-object">{OBJECT_ICON[obj] || '?'}</span>}
-                  <CellMarks people={people} mark={session?.marks?.[key]} fixedPerson={fixedByCell[key]} />
+                  {terrain === 'water' && <span className="terrain-badge">💧</span>}
+                  {obj && (
+                    <span className="cell-object">
+                      <span className="cell-object-icon">{OBJECT_ICON[obj] || '❔'}</span>
+                    </span>
+                  )}
+                  {!isBlocked && (
+                    <CellMarks people={people} mark={session?.marks?.[key]} fixedPerson={fixedByCell[key]} />
+                  )}
+                  {label && <span className="area-label">{label}</span>}
                 </div>
               );
             })}

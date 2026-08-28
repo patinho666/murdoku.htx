@@ -63,3 +63,11 @@ export const AREA_PALETTE = [
   '#f2b5a3', '#a3d2f2', '#c9f2a3', '#f2e6a3', '#d3a3f2',
   '#a3f2df', '#f2a3c9', '#c3c3f2', '#f2c3a3', '#a3f2b5',
 ];
+
+// Pastel, poster-flat palette used for area fills in the redesigned board,
+// closer to the reference art (soft dusty blue, mint checker feel, lilac,
+// blush pink...). Cycled by area index.
+export const AREA_COLORS = [
+  '#9fb6d9', '#e6cfe0', '#a9d9c9', '#d9c9a0', '#c2b0d9',
+  '#d9a9ae', '#a0c2d9', '#c9d9a0', '#d9b0c8', '#b0d9d0',
+];

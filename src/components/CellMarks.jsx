@@ -11,8 +11,16 @@ export default function CellMarks({ people, mark, fixedPerson }) {
   }
   const letters = mark?.letters || [];
   if (letters.length === 0) return null;
+  const cols = people[0]?.gridCols || 3;
+  const rows = people[0]?.gridRows || 3;
   return (
-    <div className="cell-slots">
+    <div
+      className="cell-slots"
+      style={{
+        gridTemplateColumns: `repeat(${cols}, 1fr)`,
+        gridTemplateRows: `repeat(${rows}, 1fr)`,
+      }}
+    >
       {people.map((p) => {
         if (!letters.includes(p.name)) return null;
         return (

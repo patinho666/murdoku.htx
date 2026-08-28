@@ -49,6 +49,7 @@ export async function startOrJoinSession(puzzle, user, sessionIdFromLink) {
     everPlayers: [user.id],
     marks: {},
     fixed: {},
+    usedClues: {},
     status: 'active',
   });
   await setDoc(progressRef(user.id, puzzle.id), {
@@ -166,19 +167,46 @@ export function useSession(sessionId, user) {
     patch(fields);
   }, [patch]);
 
-  // Fixing a person: sets fixed[name], removes their letter marks elsewhere,
-  // and X's out every other cell in that row and column.
+  // Erase just one person's letter from a cell (leaves other people's
+  // letters and any X in place).
+  const erasePersonFromCell = useCallback((r, c, personName) => {
+    if (!session) return;
+    const key = cellKey(r, c);
+    const current = session.marks?.[key]?.letters || [];
+    if (!current.includes(personName)) return;
+    patch({ [`marks.${key}.letters`]: current.filter((n) => n !== personName) });
+  }, [session, patch]);
+
+  const erasePersonFromCells = useCallback((cells, personName) => {
+    if (!session) return;
+    const fields = {};
+    for (const [r, c] of cells) {
+      const key = cellKey(r, c);
+      const current = session.marks?.[key]?.letters || [];
+      if (current.includes(personName)) {
+        fields[`marks.${key}.letters`] = current.filter((n) => n !== personName);
+      }
+    }
+    if (Object.keys(fields).length) patch(fields);
+  }, [session, patch]);
+
+  // Fixing a person: sets fixed[name], wipes their letter marks from the
+  // ENTIRE board (their position is now certain, so stray candidate marks
+  // elsewhere are no longer meaningful), and X's out every other cell in
+  // their row and column.
   const fixPerson = useCallback((personName, r, c, gridSize) => {
     if (!session) return;
     const fields = { [`fixed.${personName}`]: [r, c] };
     for (let i = 0; i < gridSize; i++) {
       for (let j = 0; j < gridSize; j++) {
         if (i === r && j === c) continue;
+        const key = cellKey(i, j);
+        const current = session.marks?.[key]?.letters || [];
+        if (current.includes(personName)) {
+          fields[`marks.${key}.letters`] = current.filter((n) => n !== personName);
+        }
         if (i === r || j === c) {
-          fields[`marks.${cellKey(i, j)}.x`] = true;
-          const key = cellKey(i, j);
-          const current = session.marks?.[key]?.letters || [];
-          if (current.length) fields[`marks.${key}.letters`] = current.filter((n) => n !== personName);
+          fields[`marks.${key}.x`] = true;
         }
       }
     }
@@ -190,6 +218,12 @@ export function useSession(sessionId, user) {
   const unfixPerson = useCallback((personName) => {
     patch({ [`fixed.${personName}`]: deleteField() });
   }, [patch]);
+
+  const toggleUsedClue = useCallback((clueKey) => {
+    if (!session) return;
+    const current = !!session.usedClues?.[clueKey];
+    patch({ [`usedClues.${clueKey}`]: !current });
+  }, [session, patch]);
 
   // Submits the answer. On success, marks the puzzle completed for every
   // currently-connected player only (per spec: absent players' own
@@ -222,6 +256,7 @@ export function useSession(sessionId, user) {
     await updateDoc(sessionRef(sessionId), {
       marks: {},
       fixed: {},
+      usedClues: {},
       status: 'active',
       completedAt: deleteField(),
     });
@@ -239,6 +274,7 @@ export function useSession(sessionId, user) {
   return {
     session, loading,
     toggleLetter, setLetterForCells, toggleX, eraseCell, eraseCells,
-    fixPerson, unfixPerson, submitAnswer, restartSession,
+    erasePersonFromCell, erasePersonFromCells,
+    fixPerson, unfixPerson, submitAnswer, restartSession, toggleUsedClue,
   };
 }
