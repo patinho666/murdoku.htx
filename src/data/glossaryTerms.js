@@ -1,0 +1,146 @@
+// Each entry's `diagram` describes a MiniGrid config: highlighted cells and
+// an optional arrow. All original for this app.
+export const GLOSSARY_SECTIONS = [
+  {
+    id: 'basic-directions',
+    title: 'Basic Directions',
+    entries: [
+      {
+        term: 'Beside',
+        desc: 'Directly adjacent — up, down, left, or right of a cell or object (not diagonal).',
+        diagram: { cells: [{ r: 2, c: 2, label: 'X', color: '#64748b' }, { r: 2, c: 3, label: 'A', color: '#e11d48' }] },
+      },
+      {
+        term: 'North of',
+        desc: 'Strictly above — same or different column, any row above.',
+        diagram: { cells: [{ r: 3, c: 2, label: 'X', color: '#64748b' }, { r: 1, c: 2, label: 'A', color: '#e11d48' }], arrow: { from: [3, 2], to: [1, 2] } },
+      },
+      {
+        term: 'South of',
+        desc: 'Strictly below — same or different column, any row below.',
+        diagram: { cells: [{ r: 1, c: 2, label: 'X', color: '#64748b' }, { r: 3, c: 2, label: 'A', color: '#e11d48' }], arrow: { from: [1, 2], to: [3, 2] } },
+      },
+      {
+        term: 'East of',
+        desc: 'Strictly to the right — same or different row, any column to the right.',
+        diagram: { cells: [{ r: 2, c: 1, label: 'X', color: '#64748b' }, { r: 2, c: 3, label: 'A', color: '#e11d48' }], arrow: { from: [2, 1], to: [2, 3] } },
+      },
+      {
+        term: 'West of',
+        desc: 'Strictly to the left — same or different row, any column to the left.',
+        diagram: { cells: [{ r: 2, c: 3, label: 'X', color: '#64748b' }, { r: 2, c: 1, label: 'A', color: '#e11d48' }], arrow: { from: [2, 3], to: [2, 1] } },
+      },
+      {
+        term: 'Northeast of',
+        desc: 'Above AND to the right, both at once.',
+        diagram: { cells: [{ r: 3, c: 1, label: 'X', color: '#64748b' }, { r: 1, c: 3, label: 'A', color: '#e11d48' }], arrow: { from: [3, 1], to: [1, 3] } },
+      },
+      {
+        term: 'Northwest of',
+        desc: 'Above AND to the left, both at once.',
+        diagram: { cells: [{ r: 3, c: 3, label: 'X', color: '#64748b' }, { r: 1, c: 1, label: 'A', color: '#e11d48' }], arrow: { from: [3, 3], to: [1, 1] } },
+      },
+      {
+        term: 'Southeast of / Southwest of',
+        desc: 'Below AND to the right (southeast), or below AND to the left (southwest).',
+        diagram: { cells: [{ r: 1, c: 1, label: 'X', color: '#64748b' }, { r: 3, c: 3, label: 'A', color: '#e11d48' }], arrow: { from: [1, 1], to: [3, 3] } },
+      },
+    ],
+  },
+  {
+    id: 'exact-offsets',
+    title: 'Exact Row / Column Offsets',
+    entries: [
+      {
+        term: 'Exactly one row south of',
+        desc: 'Row + 1, in any column — not "somewhere below", but the very next row down.',
+        diagram: { cells: [{ r: 2, c: 2, label: 'X', color: '#64748b' }, { r: 3, c: 2, label: 'A', color: '#e11d48' }], arrow: { from: [2, 2], to: [3, 2] } },
+      },
+      {
+        term: 'Exactly one column east of',
+        desc: 'Column + 1, in any row.',
+        diagram: { cells: [{ r: 2, c: 1, label: 'X', color: '#64748b' }, { r: 2, c: 2, label: 'A', color: '#e11d48' }], arrow: { from: [2, 1], to: [2, 2] } },
+      },
+      {
+        term: 'Exactly N rows/columns north/south/east/west of',
+        desc: 'A precise offset — e.g. "exactly three columns west of" means column − 3, any row.',
+        diagram: { cells: [{ r: 2, c: 4, label: 'X', color: '#64748b' }, { r: 2, c: 1, label: 'A', color: '#e11d48' }], arrow: { from: [2, 4], to: [2, 1] } },
+      },
+      {
+        term: 'Same diagonal as',
+        desc: 'The row distance equals the column distance (a true 45° line, either direction).',
+        diagram: { cells: [{ r: 0, c: 0, label: 'X', color: '#64748b' }, { r: 3, c: 3, label: 'A', color: '#e11d48' }], arrow: { from: [0, 0], to: [3, 3] } },
+      },
+    ],
+  },
+  {
+    id: 'row-col-location',
+    title: 'Row / Column Location',
+    entries: [
+      {
+        term: 'First column / Last column',
+        desc: 'The leftmost or rightmost column of the board.',
+        diagram: { cells: [{ r: 2, c: 0, label: 'A', color: '#e11d48' }, { r: 2, c: 4, label: 'B', color: '#2563eb' }] },
+      },
+      {
+        term: 'Top row / Bottom row',
+        desc: 'The topmost or bottommost row of the board.',
+        diagram: { cells: [{ r: 0, c: 2, label: 'A', color: '#e11d48' }, { r: 4, c: 2, label: 'B', color: '#2563eb' }] },
+      },
+      {
+        term: 'In row N',
+        desc: 'A specific numbered row (rows are numbered starting from 0 in this app, matching the puzzle data).',
+        diagram: { cells: [{ r: 3, c: 2, label: 'A', color: '#e11d48' }], dimmedRows: [3] },
+      },
+    ],
+  },
+  {
+    id: 'uniqueness',
+    title: 'Uniqueness',
+    entries: [
+      {
+        term: '"...was the only person on/beside X"',
+        desc: 'Exactly one suspect touches that object or terrain — everyone else is somewhere else.',
+        diagram: { cells: [{ r: 2, c: 2, label: 'A', color: '#e11d48' }] },
+      },
+    ],
+  },
+  {
+    id: 'exact-counts',
+    title: 'Exact Counts',
+    entries: [
+      {
+        term: '"At least N people in [area]"',
+        desc: 'A minimum headcount for an area — more than N is fine, fewer is not.',
+        diagram: { cells: [{ r: 1, c: 1, label: 'A', color: '#e11d48' }, { r: 1, c: 2, label: 'B', color: '#2563eb' }, { r: 2, c: 1, label: 'C', color: '#16a34a' }] },
+      },
+    ],
+  },
+  {
+    id: 'alone',
+    title: 'Alone',
+    entries: [
+      {
+        term: '"X was alone with Y"',
+        desc: 'Only those two people shared that area — no one else was in it with them. This is exactly how the victim clue works: the victim was alone with the murderer, so once you know everyone else\'s area, the murderer is whoever shares the victim\'s area.',
+        diagram: { cells: [{ r: 2, c: 1, label: 'A', color: '#e11d48' }, { r: 2, c: 2, label: 'B', color: '#2563eb' }] },
+      },
+    ],
+  },
+  {
+    id: 'special-mechanics',
+    title: 'Special Mechanics',
+    entries: [
+      {
+        term: 'Immediately before/after (ordered areas)',
+        desc: 'For themes with numbered/ordered areas (like golf holes or cell blocks), this means the adjacent number either side — e.g. immediately before/after Hole 5 means Hole 4 or Hole 6.',
+        diagram: null,
+      },
+      {
+        term: 'Not on X, but beside X',
+        desc: 'Adjacent to a terrain or object without being on/in it — e.g. next to water but not standing in it.',
+        diagram: { cells: [{ r: 2, c: 2, label: 'A', color: '#e11d48' }, { r: 2, c: 3, label: '≈', color: '#7fb8d6' }] },
+      },
+    ],
+  },
+];

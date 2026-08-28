@@ -1,0 +1,470 @@
+{
+  "id": "ea21eeeb",
+  "title": "Still Water Lagoon",
+  "tease": "Nobody heard the splash. Everybody heard the silence after.",
+  "theme": "lagoon",
+  "difficulty": "easy",
+  "solvable_by_elimination": true,
+  "propagation_rounds": 2,
+  "grid_size": 5,
+  "areas": {
+    "Sand Spit": {
+      "cells": [
+        [
+          2,
+          4
+        ],
+        [
+          3,
+          2
+        ],
+        [
+          3,
+          3
+        ],
+        [
+          3,
+          4
+        ],
+        [
+          4,
+          3
+        ],
+        [
+          4,
+          4
+        ]
+      ],
+      "ordinal": null
+    },
+    "Deck": {
+      "cells": [
+        [
+          0,
+          0
+        ],
+        [
+          0,
+          1
+        ],
+        [
+          0,
+          2
+        ],
+        [
+          0,
+          3
+        ],
+        [
+          1,
+          1
+        ],
+        [
+          2,
+          1
+        ]
+      ],
+      "ordinal": null
+    },
+    "Boathouse": {
+      "cells": [
+        [
+          0,
+          4
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          1,
+          3
+        ],
+        [
+          1,
+          4
+        ],
+        [
+          2,
+          2
+        ],
+        [
+          2,
+          3
+        ]
+      ],
+      "ordinal": null
+    },
+    "Shallows": {
+      "cells": [
+        [
+          1,
+          0
+        ],
+        [
+          2,
+          0
+        ],
+        [
+          3,
+          0
+        ],
+        [
+          3,
+          1
+        ],
+        [
+          4,
+          0
+        ],
+        [
+          4,
+          1
+        ],
+        [
+          4,
+          2
+        ]
+      ],
+      "ordinal": null
+    }
+  },
+  "terrain": [
+    {
+      "cell": [
+        0,
+        0
+      ],
+      "type": "sand"
+    },
+    {
+      "cell": [
+        0,
+        1
+      ],
+      "type": "sand"
+    },
+    {
+      "cell": [
+        0,
+        2
+      ],
+      "type": "sand"
+    },
+    {
+      "cell": [
+        0,
+        3
+      ],
+      "type": "sand"
+    },
+    {
+      "cell": [
+        0,
+        4
+      ],
+      "type": "path"
+    },
+    {
+      "cell": [
+        1,
+        0
+      ],
+      "type": "water"
+    },
+    {
+      "cell": [
+        1,
+        1
+      ],
+      "type": "sand"
+    },
+    {
+      "cell": [
+        1,
+        2
+      ],
+      "type": "path"
+    },
+    {
+      "cell": [
+        1,
+        3
+      ],
+      "type": "path"
+    },
+    {
+      "cell": [
+        1,
+        4
+      ],
+      "type": "path"
+    },
+    {
+      "cell": [
+        2,
+        0
+      ],
+      "type": "water"
+    },
+    {
+      "cell": [
+        2,
+        1
+      ],
+      "type": "sand"
+    },
+    {
+      "cell": [
+        2,
+        2
+      ],
+      "type": "path"
+    },
+    {
+      "cell": [
+        2,
+        3
+      ],
+      "type": "path"
+    },
+    {
+      "cell": [
+        2,
+        4
+      ],
+      "type": "sand"
+    },
+    {
+      "cell": [
+        3,
+        0
+      ],
+      "type": "water"
+    },
+    {
+      "cell": [
+        3,
+        1
+      ],
+      "type": "water"
+    },
+    {
+      "cell": [
+        3,
+        2
+      ],
+      "type": "sand"
+    },
+    {
+      "cell": [
+        3,
+        3
+      ],
+      "type": "sand"
+    },
+    {
+      "cell": [
+        3,
+        4
+      ],
+      "type": "sand"
+    },
+    {
+      "cell": [
+        4,
+        0
+      ],
+      "type": "water"
+    },
+    {
+      "cell": [
+        4,
+        1
+      ],
+      "type": "water"
+    },
+    {
+      "cell": [
+        4,
+        2
+      ],
+      "type": "water"
+    },
+    {
+      "cell": [
+        4,
+        3
+      ],
+      "type": "sand"
+    },
+    {
+      "cell": [
+        4,
+        4
+      ],
+      "type": "sand"
+    }
+  ],
+  "objects": [
+    {
+      "id": 1,
+      "type": "rock",
+      "cells": [
+        [
+          1,
+          3
+        ]
+      ],
+      "blocking": true,
+      "capacity": 1
+    },
+    {
+      "id": 2,
+      "type": "door",
+      "cells": [
+        [
+          0,
+          1
+        ]
+      ],
+      "blocking": false,
+      "capacity": 1
+    },
+    {
+      "id": 3,
+      "type": "rock",
+      "cells": [
+        [
+          1,
+          1
+        ]
+      ],
+      "blocking": true,
+      "capacity": 1
+    },
+    {
+      "id": 4,
+      "type": "chair",
+      "cells": [
+        [
+          2,
+          1
+        ]
+      ],
+      "blocking": false,
+      "capacity": 1
+    },
+    {
+      "id": 5,
+      "type": "carpet",
+      "cells": [
+        [
+          0,
+          2
+        ]
+      ],
+      "blocking": false,
+      "capacity": 1
+    },
+    {
+      "id": 6,
+      "type": "shark",
+      "cells": [
+        [
+          2,
+          3
+        ]
+      ],
+      "blocking": true,
+      "capacity": 1
+    },
+    {
+      "id": 7,
+      "type": "box",
+      "cells": [
+        [
+          2,
+          4
+        ]
+      ],
+      "blocking": true,
+      "capacity": 1
+    }
+  ],
+  "scene_clues": [
+    "There was exactly one person on the chair.",
+    "Nobody was on the door."
+  ],
+  "suspects": [
+    {
+      "name": "Alma",
+      "gender": "f"
+    },
+    {
+      "name": "Bertrand",
+      "gender": "m"
+    },
+    {
+      "name": "Cordelia",
+      "gender": "f"
+    },
+    {
+      "name": "Dorian",
+      "gender": "m"
+    }
+  ],
+  "clues": {
+    "Alma": "Alma was northwest of Bertrand.",
+    "Bertrand": "Bertrand was northeast of Cordelia.",
+    "Cordelia": "Cordelia was in row 4.",
+    "Dorian": "Dorian was in the same area as Cordelia."
+  },
+  "victim": "Verity",
+  "victim_clue": "The Victim. Verity was alone with the murderer.",
+  "solution": {
+    "people": {
+      "Alma": {
+        "cell": [
+          0,
+          0
+        ],
+        "area": "Deck"
+      },
+      "Bertrand": {
+        "cell": [
+          1,
+          4
+        ],
+        "area": "Boathouse"
+      },
+      "Verity": {
+        "cell": [
+          2,
+          1
+        ],
+        "area": "Deck"
+      },
+      "Cordelia": {
+        "cell": [
+          3,
+          2
+        ],
+        "area": "Sand Spit"
+      },
+      "Dorian": {
+        "cell": [
+          4,
+          3
+        ],
+        "area": "Sand Spit"
+      }
+    },
+    "victim_cell": [
+      2,
+      1
+    ],
+    "victim_area": "Deck",
+    "murderer": "Alma"
+  }
+}
