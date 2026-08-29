@@ -36,7 +36,6 @@ export const OBJECT_LIBRARY = {
   crocodile: { blocking: true, icon: '🐊' },
   shark: { blocking: true, icon: '🦈' },
   horse: { blocking: false, prep: 'on', icon: '🐴' },
-  boat: { blocking: false, prep: 'in', icon: '🛶' },
   rowboat: { blocking: false, prep: 'in', icon: '🚣' },
   'lily pad': { blocking: false, prep: 'on', icon: '🌸' },
   car: { blocking: false, prep: 'in', icon: '🚗' },

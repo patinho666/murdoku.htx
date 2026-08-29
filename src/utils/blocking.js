@@ -27,4 +27,4 @@ export function buildBlockedCellSet(puzzle) {
   return blocked;
 }
 
-const WATER_OK_TYPES = new Set(['boat', 'rowboat', 'lily pad']);
+const WATER_OK_TYPES = new Set(['rowboat', 'lily pad']);

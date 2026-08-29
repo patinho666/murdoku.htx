@@ -98,7 +98,6 @@ export const OBJECT_EMOJI = {
   crocodile: '🐊',
   shark: '🦈',
   horse: '🐴',
-  boat: '🛶',
   rowboat: '🚣',
   'lily pad': '🌸',
   car: '🚗',
