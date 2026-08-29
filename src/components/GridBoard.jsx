@@ -2,15 +2,33 @@ import { useRef } from 'react';
 import { cellKey } from '../utils/cellKey';
 import { buildAreaLayout } from '../utils/areaLayout';
 import { buildBlockedCellSet } from '../utils/blocking';
+import { buildPatternStyle } from '../utils/areaPatterns';
+import { TERRAIN_COLOR } from '../data/objectLibrary';
 import CellMarks from './CellMarks';
 import ObjectGlyph from './ObjectGlyph';
 
 const LONG_PRESS_MS = 550;
 const MOVE_CANCEL_PX = 10;
 
+// Water and grass get their own fixed color/texture regardless of which
+// area they belong to (a quick visual read of "this is water/grass" is
+// more useful than area-color consistency there); every other terrain
+// keeps using its area's color.
+const WATER_STYLE = buildPatternStyle(TERRAIN_COLOR.water, 4); // ripple pattern
+const GRASS_STYLE = buildPatternStyle(TERRAIN_COLOR.grass, 3); // speckle pattern
+
+function canInteract(tool, isBlockedCell) {
+  // Marking a candidate only makes sense where someone could actually
+  // stand; crossing out, erasing, and locking are allowed everywhere,
+  // including cells nobody can occupy (e.g. auto-X'ing a fixed person's
+  // row/column, or manually X-ing a blocked cell for clarity).
+  if (tool === 'mark') return !isBlockedCell;
+  return true;
+}
+
 export default function GridBoard({
   puzzle, session, people, activePerson, tool,
-  onApplyCell, onApplyRow, onApplyCol, onFixAt,
+  onApplyCell, onApplyRow, onApplyCol, onFixAt, onGestureStart, readOnly,
 }) {
   const n = puzzle.grid_size;
   const boardRef = useRef(null);
@@ -52,16 +70,20 @@ export default function GridBoard({
     let add = true;
     if (tool === 'x') add = !mark?.x;
     else if (tool === 'erase') add = true;
-    else if (tool === 'mark' && activePerson) add = !(mark?.letters || []).includes(activePerson.name);
+    else if (tool === 'lock') add = true;
+    else if (tool === 'mark' && activePerson) add = true; // mark never toggles off — only Erase removes
+    onGestureStart?.();
     dragState.current = { add, touched: new Set() };
     applyToCell(r, c, add);
   };
 
   const handlePointerDown = (e, r, c) => {
-    if (blocked.has(cellKey(r, c))) return;
+    if (readOnly) return;
+    const isBlockedCell = blocked.has(cellKey(r, c));
+    if (!canInteract(tool, isBlockedCell)) return;
     e.preventDefault();
     boardRef.current?.setPointerCapture?.(e.pointerId);
-    const canLongPressFix = tool === 'mark' && !!activePerson && !!onFixAt;
+    const canLongPressFix = tool === 'mark' && !!activePerson && !!onFixAt && !isBlockedCell;
     pressState.current = {
       r, c, x: e.clientX, y: e.clientY, moved: false, longPressed: false, dragStarted: false,
     };
@@ -69,6 +91,7 @@ export default function GridBoard({
       pressState.current.timer = setTimeout(() => {
         if (pressState.current && !pressState.current.moved) {
           pressState.current.longPressed = true;
+          onGestureStart?.();
           onFixAt(r, c);
         }
       }, LONG_PRESS_MS);
@@ -78,7 +101,9 @@ export default function GridBoard({
   const handlePointerMove = (e) => {
     if (dragState.current) {
       const found = cellFromPoint(e.clientX, e.clientY);
-      if (found && !blocked.has(cellKey(found[0], found[1]))) applyToCell(found[0], found[1], dragState.current.add);
+      if (found && canInteract(tool, blocked.has(cellKey(found[0], found[1])))) {
+        applyToCell(found[0], found[1], dragState.current.add);
+      }
       return;
     }
     if (!pressState.current) return;
@@ -114,6 +139,17 @@ export default function GridBoard({
     dragState.current = null;
   };
 
+  const handleRowClick = (r) => {
+    if (readOnly) return;
+    onGestureStart?.();
+    onApplyRow(r);
+  };
+  const handleColClick = (c) => {
+    if (readOnly) return;
+    onGestureStart?.();
+    onApplyCol(c);
+  };
+
   return (
     <div className="board-wrap">
       <div
@@ -126,11 +162,11 @@ export default function GridBoard({
       >
         <div className="corner" />
         {Array.from({ length: n }).map((_, c) => (
-          <button key={`colh-${c}`} className="col-handle" onClick={() => onApplyCol(c)}>▾</button>
+          <button key={`colh-${c}`} className="col-handle" onClick={() => handleColClick(c)}>{c}</button>
         ))}
         {Array.from({ length: n }).map((_, r) => (
           <div className="row-fragment" key={`row-${r}`} style={{ display: 'contents' }}>
-            <button className="row-handle" onClick={() => onApplyRow(r)}>▸</button>
+            <button className="row-handle" onClick={() => handleRowClick(r)}>{r}</button>
             {Array.from({ length: n }).map((_, c) => {
               const key = cellKey(r, c);
               const terrain = terrainByCell[key] || 'floor';
@@ -141,19 +177,22 @@ export default function GridBoard({
               const label = labelAnchor[key];
               const borderRight = c === n - 1 || areaByCell[cellKey(r, c + 1)] !== areaName;
               const borderBottom = r === n - 1 || areaByCell[cellKey(r + 1, c)] !== areaName;
+              const cellStyle = terrain === 'water' ? WATER_STYLE
+                : terrain === 'grass' ? GRASS_STYLE
+                : (styleByArea[areaName] || { backgroundColor: '#e2e8f0' });
               return (
                 <div
                   key={key}
                   data-cell data-r={r} data-c={c}
-                  className={`cell${isCrossed ? ' cell-crossed' : ''}`}
+                  className={`cell${isCrossed ? ' cell-crossed' : ''}${isBlocked ? ' cell-blocked' : ''}`}
                   style={{
-                    ...(styleByArea[areaName] || { backgroundColor: '#e2e8f0' }),
+                    ...cellStyle,
                     borderRightWidth: borderRight ? 3 : 1,
                     borderBottomWidth: borderBottom ? 3 : 1,
                   }}
                   onPointerDown={(e) => handlePointerDown(e, r, c)}
                 >
-                  {terrain === 'water' && (
+                  {terrain === 'water' && !obj && (
                     <span className="terrain-badge">
                       <ObjectGlyph type="puddle" size="100%" dropShadow={false} />
                     </span>
@@ -163,9 +202,7 @@ export default function GridBoard({
                       <ObjectGlyph type={obj} size="100%" />
                     </span>
                   )}
-                  {!isBlocked && (
-                    <CellMarks people={people} mark={session?.marks?.[key]} fixedPerson={fixedByCell[key]} />
-                  )}
+                  <CellMarks people={people} mark={session?.marks?.[key]} fixedPerson={fixedByCell[key]} />
                   {label && <span className="area-label">{label}</span>}
                 </div>
               );

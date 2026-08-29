@@ -57,6 +57,10 @@ h1, h2, h3 { margin: 0.2em 0; font-family: 'Fredoka', 'Nunito', sans-serif; }
 .room-header { display: flex; align-items: center; justify-content: space-between; padding: 12px 14px; gap: 8px; }
 .room-header h1 { font-size: 18px; flex: 1; text-align: center; }
 .room-meta { display: flex; gap: 10px; align-items: center; padding: 0 14px 10px; flex-wrap: wrap; font-size: 13px; }
+.solved-banner {
+  margin: 0 14px 10px; background: #166534; color: #dcfce7; text-align: center;
+  padding: 8px; border-radius: 8px; font-weight: 700; font-size: 13px;
+}
 .room-body { padding: 0 10px; display: flex; flex-direction: column; gap: 16px; align-items: center; }
 .share-btn { background: #334155; color: white; border: none; padding: 8px 10px; border-radius: 8px; font-size: 12px; }
 
@@ -99,7 +103,8 @@ h1, h2, h3 { margin: 0.2em 0; font-family: 'Fredoka', 'Nunito', sans-serif; }
   display: flex; align-items: center; justify-content: center;
 }
 .cell-object {
-  position: absolute; top: 5%; left: 5%; width: 48%; height: 48%;
+  position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+  width: 80%; height: 80%;
   display: flex; align-items: center; justify-content: center;
 }
 .area-label {
@@ -110,10 +115,16 @@ h1, h2, h3 { margin: 0.2em 0; font-family: 'Fredoka', 'Nunito', sans-serif; }
   pointer-events: none; z-index: 2;
 }
 .cell-slots {
-  position: absolute; inset: 0; display: grid;
+  position: absolute; inset: 0; display: grid; z-index: 3;
 }
-.cell-slot { display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 800; line-height: 1; }
+.cell-slot {
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Fredoka', sans-serif; font-size: 11px; font-weight: 900; line-height: 1;
+  text-shadow: -1px -1px 0 #fff, 1px -1px 0 #fff, -1px 1px 0 #fff, 1px 1px 0 #fff, 0 1px 2px rgba(0,0,0,0.25);
+}
 .cell-x {
+  position: absolute; inset: 0; z-index: 3;
+  display: flex; align-items: center; justify-content: center;
   color: #000; font-size: 24px; font-weight: 900; opacity: 0.85;
 }
 .cell.cell-crossed { filter: brightness(0.82) saturate(0.7); }
@@ -130,6 +141,7 @@ h1, h2, h3 { margin: 0.2em 0; font-family: 'Fredoka', 'Nunito', sans-serif; }
 .tool { background: #1e293b; color: #cbd5e1; border: none; border-radius: 8px; padding: 8px 10px; font-size: 12px; }
 .tool.active { background: #2563eb; color: white; }
 .tool.unfix { background: #7c2d12; color: #fed7aa; }
+.tool.undo { background: #334155; color: #e2e8f0; }
 .tool:disabled { opacity: 0.4; }
 .palette-hint { font-size: 12px; color: #94a3b8; min-height: 32px; }
 

@@ -161,3 +161,35 @@ npm run dev
   airplane mode) it may show "online" a little longer than it should. A
   Firestore `onDisconnect`-style heartbeat would need Realtime Database
   instead of Firestore if you want that tightened up.
+- **Icons are bundled locally** (`src/assets/emoji/`) rather than fetched
+  from a CDN at runtime — this fixed a real mobile-loading problem where
+  every board cell fired its own cross-origin request. If you add puzzles
+  that reference an object type not already in `data/objectIcons.js`,
+  you'll need to download that emoji's Twemoji SVG into `src/assets/emoji/`
+  yourself (filename = its Unicode codepoint(s) in lowercase hex, joined
+  by `-`, e.g. `1f43b.svg` for 🐻) and add the mapping — there's a dev-only
+  console warning if a puzzle uses an object type with no icon mapped.
+- **Row/column locking** (multi-select 2+ suspects, then tap a row/column/
+  cell to rule out everyone else there) only clears *other* people's
+  candidate marks — it doesn't add marks for the locked people, and it
+  doesn't enforce anything going forward. It's a note-taking aid, not a
+  constraint the game checks.
+- **Undo** keeps a small in-memory stack (not synced to other players,
+  not persisted — leaving and returning to a puzzle starts fresh). If two
+  players are marking at once, undo can only step back *your own* device's
+  view of "before my last action," not a true shared undo log — good
+  enough for casual co-op, not airtight for adversarial use.
+- **Icon coverage**: checked both Twemoji AND OpenMoji's actual, complete
+  icon datasets directly (not just guessing from search results) for
+  carpet, table, punching bag, easel, puddle, and shrub — neither set has
+  a dedicated icon for any of them; Unicode-style emoji just doesn't cover
+  that part of furniture/objects. They're on the closest available emoji
+  proxy. The one real find was OpenMoji's dedicated "oil-spill" icon (an
+  overturned drum with spreading oil), now used for the `oil slick` object
+  type — bundled locally at `src/assets/icons/oil-spill.svg`. Note OpenMoji
+  is CC BY-**SA** 4.0 (ShareAlike), a stricter license than Twemoji's plain
+  CC-BY — both are credited on the Glossary page, but worth knowing that
+  distinction exists if this project's licensing terms matter to you later.
+  If you want true pixel-accurate icons for the remaining six, a
+  custom-drawn or commissioned icon set is the only real path — there's no
+  ready-made open set that has them.

@@ -13,6 +13,8 @@ import ClueList from '../components/ClueList';
 import ConnectedPlayers from '../components/ConnectedPlayers';
 import ShareId from '../components/ShareId';
 
+const MAX_UNDO_HISTORY = 25;
+
 export default function PuzzleRoom() {
   const { param } = useParams();
   const { user } = useUser();
@@ -24,6 +26,8 @@ export default function PuzzleRoom() {
   const [activePerson, setActivePerson] = useState(null);
   const [tool, setTool] = useState('mark');
   const [wrongFlash, setWrongFlash] = useState(false);
+  const [lockedPeople, setLockedPeople] = useState(() => new Set());
+  const [history, setHistory] = useState([]);
 
   // Resolve whether `param` is a puzzle id (start/resume own game) or a
   // shared session id (join someone else's game).
@@ -55,26 +59,55 @@ export default function PuzzleRoom() {
     session, toggleLetter, setLetterForCells, toggleX, eraseCell, eraseCells,
     erasePersonFromCell, erasePersonFromCells,
     fixPerson, unfixPerson, submitAnswer, restartSession, toggleUsedClue,
+    restoreSnapshot,
   } = useSession(sessionId, user);
 
   const people = useMemo(() => (puzzle ? getAllPeople(puzzle) : []), [puzzle]);
 
+  // Undo history is per-visit only — a fresh mount (new puzzle, or leaving
+  // and coming back) starts with an empty stack.
   useEffect(() => {
-    if (session?.status === 'completed') {
-      navigate(`/finish/${sessionId}`, { replace: true });
-    }
-  }, [session?.status, sessionId, navigate]);
+    setHistory([]);
+  }, [sessionId]);
 
   if (resolving || !puzzle) {
     return <div className="center-msg">{resolving ? 'Loading…' : 'Puzzle not found.'}</div>;
   }
 
   const n = puzzle.grid_size;
+  const isSolved = session?.status === 'completed';
+
+  // Called once at the start of a gesture (a whole drag, a single tap, a
+  // row/column click, a fix) — never per-cell — so an entire drag counts
+  // as one undo step.
+  const pushHistorySnapshot = () => {
+    if (!session) return;
+    setHistory((h) => {
+      const next = [...h, { marks: session.marks || {}, fixed: session.fixed || {} }];
+      return next.length > MAX_UNDO_HISTORY ? next.slice(next.length - MAX_UNDO_HISTORY) : next;
+    });
+  };
+
+  const handleUndo = () => {
+    if (history.length === 0) return;
+    const prev = history[history.length - 1];
+    setHistory((h) => h.slice(0, -1));
+    restoreSnapshot(prev.marks, prev.fixed);
+  };
 
   // Erase tool: if a suspect/victim chip is selected, erase only that
   // person's letter from the touched cells; otherwise clear the whole cell
-  // (letters + X).
+  // (letters + X). Lock tool: with 2+ suspects selected, rules out every
+  // OTHER suspect's candidate marks there, without deciding between the
+  // locked ones.
+  const excludedFromLock = () => people.filter((p) => !lockedPeople.has(p.name)).map((p) => p.name);
+
   const handleApplyCell = (r, c, add) => {
+    if (tool === 'lock') {
+      if (lockedPeople.size < 2) return;
+      for (const name of excludedFromLock()) erasePersonFromCell(r, c, name);
+      return;
+    }
     if (tool === 'x') { if (!!session?.marks?.[`${r}_${c}`]?.x !== add) toggleX(r, c); return; }
     if (tool === 'erase') {
       if (activePerson) erasePersonFromCell(r, c, activePerson.name);
@@ -91,12 +124,22 @@ export default function PuzzleRoom() {
   const colCells = (c) => Array.from({ length: n }, (_, r) => [r, c]);
 
   const handleApplyRow = (r) => {
+    if (tool === 'lock') {
+      if (lockedPeople.size < 2) return;
+      for (const name of excludedFromLock()) erasePersonFromCells(rowCells(r), name);
+      return;
+    }
     if (tool === 'erase') {
       return activePerson ? erasePersonFromCells(rowCells(r), activePerson.name) : eraseCells(rowCells(r));
     }
     if (tool === 'mark' && activePerson) return setLetterForCells(rowCells(r), activePerson.name, true);
   };
   const handleApplyCol = (c) => {
+    if (tool === 'lock') {
+      if (lockedPeople.size < 2) return;
+      for (const name of excludedFromLock()) erasePersonFromCells(colCells(c), name);
+      return;
+    }
     if (tool === 'erase') {
       return activePerson ? erasePersonFromCells(colCells(c), activePerson.name) : eraseCells(colCells(c));
     }
@@ -118,12 +161,25 @@ export default function PuzzleRoom() {
 
   const activeFixedCell = activePerson ? session?.fixed?.[activePerson.name] : null;
   const handleUnfixActive = () => {
-    if (activePerson) unfixPerson(activePerson.name);
+    if (!activePerson) return;
+    pushHistorySnapshot();
+    unfixPerson(activePerson.name);
+  };
+
+  const handleToggleLockedPerson = (name) => {
+    setLockedPeople((prev) => {
+      const next = new Set(prev);
+      if (next.has(name)) next.delete(name);
+      else next.add(name);
+      return next;
+    });
   };
 
   const handleSubmit = async () => {
     const ok = await submitAnswer(puzzle);
-    if (!ok) {
+    if (ok) {
+      navigate(`/finish/${sessionId}`);
+    } else {
       setWrongFlash(true);
       setTimeout(() => setWrongFlash(false), 1600);
     }
@@ -148,6 +204,10 @@ export default function PuzzleRoom() {
         <ConnectedPlayers players={session?.players} currentUserId={user.id} />
       </div>
 
+      {isSolved && (
+        <div className="solved-banner">🔒 SOLVED — tap Restart below to play again</div>
+      )}
+
       <div className="room-body">
         <GridBoard
           puzzle={puzzle}
@@ -159,6 +219,8 @@ export default function PuzzleRoom() {
           onApplyRow={handleApplyRow}
           onApplyCol={handleApplyCol}
           onFixAt={handleFixAt}
+          onGestureStart={pushHistorySnapshot}
+          readOnly={isSolved}
         />
 
         <SuspectPalette
@@ -169,6 +231,11 @@ export default function PuzzleRoom() {
           setTool={setTool}
           isActiveFixed={!!activeFixedCell}
           onUnfix={handleUnfixActive}
+          lockedPeople={lockedPeople}
+          onToggleLockedPerson={handleToggleLockedPerson}
+          onUndo={handleUndo}
+          canUndo={history.length > 0}
+          readOnly={isSolved}
         />
 
         <ClueList puzzle={puzzle} usedClues={session?.usedClues} onToggleUsed={toggleUsedClue} />
@@ -176,15 +243,16 @@ export default function PuzzleRoom() {
         <div className="submit-row">
           <button
             className="submit-btn"
-            disabled={!allFixed}
+            disabled={isSolved || !allFixed}
             onClick={handleSubmit}
           >
-            Submit solution
+            {isSolved ? 'Solved' : 'Submit solution'}
           </button>
           <button
             className="restart-btn"
             onClick={() => {
               if (window.confirm('Restart this murdoku? All marks will be erased for everyone.')) {
+                setHistory([]);
                 restartSession(puzzle);
               }
             }}

@@ -7,7 +7,7 @@ export const GLOSSARY_SECTIONS = [
     entries: [
       {
         term: 'Beside',
-        desc: 'Directly adjacent — up, down, left, or right of a cell or object (not diagonal).',
+        desc: 'Directly adjacent — up, down, left, or right of a cell or object (not diagonal) — AND in the same named area. A cell that\'s physically next door but across an area boundary (e.g. Deck vs. Boathouse) doesn\'t count as "beside," even though it touches.',
         diagram: { cells: [{ r: 2, c: 2, label: 'X', color: '#64748b' }, { r: 2, c: 3, label: 'A', color: '#e11d48' }] },
       },
       {
@@ -132,7 +132,7 @@ export const GLOSSARY_SECTIONS = [
     entries: [
       {
         term: '"There was/were exactly N people on/in [object or area]"',
-        desc: 'A precise headcount, not a minimum — exactly that many, no more and no fewer.',
+        desc: 'A precise headcount, not a minimum — exactly that many, no more and no fewer. The victim counts toward this total just like any suspect — a clue like "exactly one person on the chair" is satisfied if the victim is the one sitting there, even with zero suspects on it.',
         diagram: { cells: [{ r: 1, c: 1, label: 'A', color: '#e11d48' }, { r: 1, c: 2, label: 'B', color: '#2563eb' }] },
       },
       {
@@ -168,8 +168,8 @@ export const GLOSSARY_SECTIONS = [
         diagram: { cells: [{ r: 2, c: 2, label: 'A', color: '#e11d48' }, { r: 2, c: 3, label: '≈', color: '#7fb8d6' }] },
       },
       {
-        term: 'Role references (e.g. "the smuggler", "the informant")',
-        desc: 'Some clues point at a suspect by a hidden role instead of their name — "Ada was exactly 8 rows north of the smuggler." The smuggler IS one of the suspects, but which one is never stated directly; you have to work it out from how the role is used across the other clues, the same way you work out anyone else\'s position. Once you know who holds the role, every clue that mentions it becomes an ordinary clue about that suspect.',
+        term: 'Role references (e.g. "the murderer")',
+        desc: 'Some clues point at a suspect by a hidden role instead of their name — "Ada was exactly 8 rows north of the murderer." The murderer IS one of the suspects, but which one is never stated directly; you have to work it out from how the role is used across the other clues, the same way you work out anyone else\'s position. Once you know who holds the role, every clue that mentions it becomes an ordinary clue about that suspect.',
         diagram: null,
       },
     ],

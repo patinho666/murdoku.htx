@@ -31,8 +31,9 @@ export async function startOrJoinSession(puzzle, user, sessionIdFromLink) {
   }
 
   const progSnap = await getDoc(progressRef(user.id, puzzle.id));
-  if (progSnap.exists() && progSnap.data().status === 'in_progress' && progSnap.data().sessionId) {
-    const existing = progSnap.data().sessionId;
+  const progData = progSnap.exists() ? progSnap.data() : null;
+  if (progData && (progData.status === 'in_progress' || progData.status === 'completed') && progData.sessionId) {
+    const existing = progData.sessionId;
     const existingSessionSnap = await getDoc(sessionRef(existing));
     if (existingSessionSnap.exists()) {
       await joinSession(existing, user);
@@ -67,11 +68,15 @@ async function joinSession(sessionId, user) {
     updatedAt: serverTimestamp(),
   });
   const snap = await getDoc(sessionRef(sessionId));
-  const puzzleId = snap.data()?.puzzleId;
+  const data = snap.data();
+  const puzzleId = data?.puzzleId;
   if (puzzleId) {
+    // Don't downgrade a completed puzzle back to "in progress" just by
+    // opening it again — mirror the session's actual status instead of
+    // hardcoding one.
     await setDoc(progressRef(user.id, puzzleId), {
       sessionId,
-      status: 'in_progress',
+      status: data.status === 'completed' ? 'completed' : 'in_progress',
       lastPlayed: serverTimestamp(),
     }, { merge: true });
   }
@@ -225,6 +230,19 @@ export function useSession(sessionId, user) {
     patch({ [`usedClues.${clueKey}`]: !current });
   }, [session, patch]);
 
+  // Full-object overwrite of marks/fixed, used to restore a snapshot taken
+  // before an undoable action. Overwrites rather than merges, since a
+  // snapshot needs to fully replace the current state (including removing
+  // keys added since the snapshot was taken).
+  const restoreSnapshot = useCallback((marksSnapshot, fixedSnapshot) => {
+    if (!sessionId) return;
+    updateDoc(sessionRef(sessionId), {
+      marks: marksSnapshot,
+      fixed: fixedSnapshot,
+      updatedAt: serverTimestamp(),
+    });
+  }, [sessionId]);
+
   // Submits the answer. On success, marks the puzzle completed for every
   // currently-connected player only (per spec: absent players' own
   // databases are left untouched).
@@ -276,5 +294,6 @@ export function useSession(sessionId, user) {
     toggleLetter, setLetterForCells, toggleX, eraseCell, eraseCells,
     erasePersonFromCell, erasePersonFromCells,
     fixPerson, unfixPerson, submitAnswer, restartSession, toggleUsedClue,
+    restoreSnapshot,
   };
 }

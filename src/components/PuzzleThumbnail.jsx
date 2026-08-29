@@ -1,5 +1,5 @@
 import { buildAreaLayout } from '../utils/areaLayout';
-import { OBJECT_EMOJI, FALLBACK_EMOJI, twemojiUrl } from '../data/objectIcons';
+import { iconUrlForType } from '../data/objectIcons';
 
 export default function PuzzleThumbnail({ puzzle, size = 120 }) {
   const n = puzzle.grid_size;
@@ -28,12 +28,13 @@ export default function PuzzleThumbnail({ puzzle, size = 120 }) {
     <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} style={{ borderRadius: 8, display: 'block' }}>
       {rects}
       {puzzle.objects?.map((o) => o.cells.map(([r, c], i) => {
-        const emoji = OBJECT_EMOJI[o.type] || FALLBACK_EMOJI;
+        const url = iconUrlForType(o.type);
+        if (!url) return null;
         const iconSize = cell * 0.62;
         return (
           <image
             key={`${o.id}_${i}`}
-            href={twemojiUrl(emoji)}
+            href={url}
             x={c * cell + (cell - iconSize) / 2}
             y={r * cell + (cell - iconSize) / 2}
             width={iconSize}

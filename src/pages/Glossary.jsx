@@ -55,7 +55,7 @@ export default function Glossary() {
       <section id="board-objects" className="glossary-section">
         <h2>Board Objects ({Object.keys(OBJECT_LIBRARY).length})</h2>
         <div className="object-grid">
-          {Object.entries(OBJECT_LIBRARY).map(([name, info]) => (
+          {Object.entries(OBJECT_LIBRARY).sort(([a], [b]) => a.localeCompare(b)).map(([name, info]) => (
             <div key={name} className="object-entry">
               <span className="object-icon"><ObjectGlyph type={name} size={30} /></span>
               <span className="object-name">{name}</span>
@@ -66,7 +66,7 @@ export default function Glossary() {
       </section>
 
       <a className="back-to-top" href="#top">↑ Top</a>
-      <p className="icon-credit">Icons: <a href="https://twemoji.twitter.com" target="_blank" rel="noreferrer">Twemoji</a>, licensed CC-BY 4.0.</p>
+      <p className="icon-credit">Icons: <a href="https://twemoji.twitter.com" target="_blank" rel="noreferrer">Twemoji</a> (CC-BY 4.0) and <a href="https://openmoji.org" target="_blank" rel="noreferrer">OpenMoji</a> (CC BY-SA 4.0).</p>
     </div>
   );
 }
