@@ -82,7 +82,7 @@ h1, h2, h3 { margin: 0.2em 0; font-family: 'Fredoka', 'Nunito', sans-serif; }
   padding: 6px;
   border-radius: 16px;
   border: 3px solid #0f172a;
-  box-shadow: 0 8px 24px rgba(0,0,0,0.35);
+  box-shadow: 10px 10px 0 rgba(148,163,184,0.30), 0 10px 28px rgba(0,0,0,0.45);
 }
 .corner { background: transparent; }
 .col-handle, .row-handle {
@@ -114,6 +114,36 @@ h1, h2, h3 { margin: 0.2em 0; font-family: 'Fredoka', 'Nunito', sans-serif; }
   text-shadow: -1px -1px 0 #0f172a, 1px -1px 0 #0f172a, -1px 1px 0 #0f172a, 1px 1px 0 #0f172a, 0 1px 2px rgba(0,0,0,0.4);
   pointer-events: none; z-index: 2;
 }
+/* A multi-cell object drawn once across its whole footprint. Sits above
+   the cells but ignores pointer events so taps still reach the cell
+   underneath (marking/crossing a cell a boat sits on must still work). */
+.cell-object-span {
+  position: relative;
+  pointer-events: none;
+  z-index: 2;
+  padding: 2%;
+  /* The artwork is square, so it scales to the span's SHORT axis and
+     centres. Scaling it up a little makes a 2-cell object read as
+     genuinely spanning rather than as one icon floating in the middle,
+     at the cost of slight bleed past the footprint. */
+  overflow: visible;
+}
+.cell-object-span .span-inner img { transform: scale(1.28); }
+.cell-object-span .span-inner {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.cell-rug {
+  position: absolute; z-index: 1;
+  border-style: solid; border-radius: 3px;
+  box-shadow: inset 0 0 0 2px rgba(255,255,255,0.28);
+  pointer-events: none;
+}
 .cell-slots {
   position: absolute; inset: 0; display: grid; z-index: 3;
 }
@@ -132,7 +162,23 @@ h1, h2, h3 { margin: 0.2em 0; font-family: 'Fredoka', 'Nunito', sans-serif; }
   position: absolute; inset: 2px; border-radius: 6px; color: white; font-weight: 900;
   display: flex; align-items: center; justify-content: center; font-size: 18px;
   box-shadow: 0 2px 6px rgba(0,0,0,0.35); z-index: 3;
+  /* Semi-transparent so an object/terrain icon underneath stays readable. */
+  opacity: 0.72;
 }
+.cell-fixed span {
+  font-family: 'Fredoka', sans-serif;
+  text-shadow: 0 1px 3px rgba(0,0,0,0.65);
+}
+.lock-badge {
+  position: absolute; bottom: 2%; right: 2%; z-index: 4;
+  display: flex; align-items: center; gap: 1px;
+  background: rgba(255,255,255,0.92); border-radius: 5px;
+  padding: 0 2px; line-height: 1;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.35);
+}
+.lock-glyph { font-size: 8px; }
+.lock-letter { font-family: 'Fredoka', sans-serif; font-size: 8px; font-weight: 900; }
+.tool.unlock-hint { background: #334155; }
 
 /* ---------- Palette ---------- */
 .palette { width: min(94vw, 420px); }

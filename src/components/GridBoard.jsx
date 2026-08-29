@@ -4,6 +4,7 @@ import { buildAreaLayout } from '../utils/areaLayout';
 import { buildBlockedCellSet } from '../utils/blocking';
 import { buildPatternStyle } from '../utils/areaPatterns';
 import { TERRAIN_COLOR } from '../data/objectLibrary';
+import { shadeColor } from '../utils/color';
 import CellMarks from './CellMarks';
 import ObjectGlyph from './ObjectGlyph';
 
@@ -23,7 +24,7 @@ function canInteract(tool, isBlockedCell) {
   // including cells nobody can occupy (e.g. auto-X'ing a fixed person's
   // row/column, or manually X-ing a blocked cell for clarity).
   if (tool === 'mark') return !isBlockedCell;
-  return true;
+  return true; // x / erase / lock / unlock work everywhere
 }
 
 export default function GridBoard({
@@ -35,7 +36,7 @@ export default function GridBoard({
   const dragState = useRef(null);
   const pressState = useRef(null);
 
-  const { styleByArea, areaByCell, labelAnchor } = buildAreaLayout(puzzle);
+  const { colorByArea, styleByArea, areaByCell, labelAnchor } = buildAreaLayout(puzzle);
   const blocked = buildBlockedCellSet(puzzle);
 
   const terrainByCell = {};
@@ -44,6 +45,38 @@ export default function GridBoard({
   for (const o of puzzle.objects || []) {
     for (const c of o.cells) objectByCell[cellKey(c[0], c[1])] = o.type;
   }
+  // Carpets are drawn as tinted rectangles (like the reference boards)
+  // rather than as an icon. Adjacent carpet cells merge into one rug by
+  // only drawing the outer edges of the run.
+  const carpetCells = new Set();
+  for (const o of puzzle.objects || []) {
+    if (o.type === 'carpet') for (const c of o.cells) carpetCells.add(cellKey(c[0], c[1]));
+  }
+
+  // Multi-cell objects (bed, boat, rowboat, car, golf cart) are drawn ONCE
+  // across their whole footprint instead of repeating the icon in each
+  // cell. In this data every multi-cell object is non-blocking and every
+  // blocking object (table, shelf, box...) is single-cell, so keying off
+  // cell count leaves those repeating per-cell exactly as before.
+  const spans = [];
+  const spanCells = new Set();
+  for (const o of puzzle.objects || []) {
+    if (!o.cells || o.cells.length < 2 || o.type === 'carpet') continue;
+    const rs = o.cells.map((x) => x[0]);
+    const cs = o.cells.map((x) => x[1]);
+    const r0 = Math.min(...rs);
+    const c0 = Math.min(...cs);
+    spans.push({
+      key: `span-${o.id}-${r0}-${c0}`,
+      type: o.type,
+      r: r0,
+      c: c0,
+      rows: Math.max(...rs) - r0 + 1,
+      cols: Math.max(...cs) - c0 + 1,
+    });
+    for (const cc of o.cells) spanCells.add(cellKey(cc[0], cc[1]));
+  }
+
   const fixedByCell = {};
   for (const [name, cell] of Object.entries(session?.fixed || {})) {
     fixedByCell[cellKey(cell[0], cell[1])] = people.find((p) => p.name === name);
@@ -160,13 +193,13 @@ export default function GridBoard({
         onPointerUp={handlePointerUp}
         onPointerCancel={handlePointerCancel}
       >
-        <div className="corner" />
+        <div className="corner" style={{ gridRow: 1, gridColumn: 1 }} />
         {Array.from({ length: n }).map((_, c) => (
-          <button key={`colh-${c}`} className="col-handle" onClick={() => handleColClick(c)}>{c}</button>
+          <button key={`colh-${c}`} className="col-handle" style={{ gridRow: 1, gridColumn: c + 2 }} onClick={() => handleColClick(c)}>{c + 1}</button>
         ))}
         {Array.from({ length: n }).map((_, r) => (
           <div className="row-fragment" key={`row-${r}`} style={{ display: 'contents' }}>
-            <button className="row-handle" onClick={() => handleRowClick(r)}>{r}</button>
+            <button className="row-handle" style={{ gridRow: r + 2, gridColumn: 1 }} onClick={() => handleRowClick(r)}>{r + 1}</button>
             {Array.from({ length: n }).map((_, c) => {
               const key = cellKey(r, c);
               const terrain = terrainByCell[key] || 'floor';
@@ -177,6 +210,10 @@ export default function GridBoard({
               const label = labelAnchor[key];
               const borderRight = c === n - 1 || areaByCell[cellKey(r, c + 1)] !== areaName;
               const borderBottom = r === n - 1 || areaByCell[cellKey(r + 1, c)] !== areaName;
+              const isCarpet = carpetCells.has(key);
+              const areaBase = terrain === 'water' ? TERRAIN_COLOR.water
+                : terrain === 'grass' ? TERRAIN_COLOR.grass
+                : (colorByArea[areaName] || '#e2e8f0');
               const cellStyle = terrain === 'water' ? WATER_STYLE
                 : terrain === 'grass' ? GRASS_STYLE
                 : (styleByArea[areaName] || { backgroundColor: '#e2e8f0' });
@@ -187,6 +224,8 @@ export default function GridBoard({
                   className={`cell${isCrossed ? ' cell-crossed' : ''}${isBlocked ? ' cell-blocked' : ''}`}
                   style={{
                     ...cellStyle,
+                    gridRow: r + 2,
+                    gridColumn: c + 2,
                     borderRightWidth: borderRight ? 3 : 1,
                     borderBottomWidth: borderBottom ? 3 : 1,
                   }}
@@ -197,9 +236,26 @@ export default function GridBoard({
                       <ObjectGlyph type="puddle" size="100%" dropShadow={false} />
                     </span>
                   )}
-                  {obj && (
+                  {isCarpet && (
+                    <span
+                      className="cell-rug"
+                      style={{
+                        background: shadeColor(areaBase, -16),
+                        borderColor: shadeColor(areaBase, -34),
+                        borderTopWidth: carpetCells.has(cellKey(r - 1, c)) ? 0 : 3,
+                        borderBottomWidth: carpetCells.has(cellKey(r + 1, c)) ? 0 : 3,
+                        borderLeftWidth: carpetCells.has(cellKey(r, c - 1)) ? 0 : 3,
+                        borderRightWidth: carpetCells.has(cellKey(r, c + 1)) ? 0 : 3,
+                        top: carpetCells.has(cellKey(r - 1, c)) ? 0 : '8%',
+                        bottom: carpetCells.has(cellKey(r + 1, c)) ? 0 : '8%',
+                        left: carpetCells.has(cellKey(r, c - 1)) ? 0 : '8%',
+                        right: carpetCells.has(cellKey(r, c + 1)) ? 0 : '8%',
+                      }}
+                    />
+                  )}
+                  {obj && !isCarpet && !spanCells.has(key) && (
                     <span className="cell-object">
-                      <ObjectGlyph type={obj} size="100%" />
+                      <ObjectGlyph type={obj} size="100%" tint={areaBase} />
                     </span>
                   )}
                   <CellMarks people={people} mark={session?.marks?.[key]} fixedPerson={fixedByCell[key]} />
@@ -209,6 +265,39 @@ export default function GridBoard({
             })}
           </div>
         ))}
+        {spans.map((sp) => {
+          const anchorKey = cellKey(sp.r, sp.c);
+          const terrain = terrainByCell[anchorKey] || 'floor';
+          const areaName = areaByCell[anchorKey];
+          const base = terrain === 'water' ? TERRAIN_COLOR.water
+            : terrain === 'grass' ? TERRAIN_COLOR.grass
+            : (colorByArea[areaName] || '#e2e8f0');
+          // Artwork is drawn wide; a vertical footprint rotates it and
+          // swaps its box (cells are square, so the swap is just the
+          // rows:cols ratio).
+          const vertical = sp.rows > sp.cols;
+          const inner = vertical
+            ? {
+              width: `${(sp.rows / sp.cols) * 100}%`,
+              height: `${(sp.cols / sp.rows) * 100}%`,
+              transform: 'translate(-50%, -50%) rotate(90deg)',
+            }
+            : { width: '100%', height: '100%', transform: 'translate(-50%, -50%)' };
+          return (
+            <span
+              key={sp.key}
+              className="cell-object-span"
+              style={{
+                gridRow: `${sp.r + 2} / span ${sp.rows}`,
+                gridColumn: `${sp.c + 2} / span ${sp.cols}`,
+              }}
+            >
+              <span className="span-inner" style={inner}>
+                <ObjectGlyph type={sp.type} size="100%" tint={base} />
+              </span>
+            </span>
+          );
+        })}
       </div>
     </div>
   );

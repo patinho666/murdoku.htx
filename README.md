@@ -151,6 +151,30 @@ npm run dev
    play; sharing a puzzle's in-room link brings a second phone into the same
    live session.
 
+## Board look
+
+Each puzzle renders in a single hue family taken from its `theme`
+(`src/utils/areaPatterns.js` → `THEME_BASE`), with every area a tint of
+that hue plus its own texture — matching how the reference boards use one
+colour family per puzzle rather than a different hue per area. On top of
+that:
+
+- **Object artwork is tinted into the board's hue** via a CSS filter chain
+  (`tintFilter` in `src/utils/color.js`), so objects belong to the board
+  instead of reading as full-colour stickers pasted on. The filter keeps
+  the artwork's internal shading and outlines, which a flat silhouette
+  mask would throw away. The glossary deliberately shows objects
+  *untinted* — a reference chart wants true colours.
+- **Carpets render as rectangles, not icons.** Adjacent carpet cells merge
+  into one rug by only drawing the outer edges of the run, so an L-shaped
+  group of carpet cells reads as a single L-shaped rug.
+- **Board drop shadow**: offset grey shadow bottom-right, like the
+  reference art.
+
+Tuning knobs: `THEME_BASE` (hue per theme), `TINT_STEPS` (how far apart
+area tints sit), and `tintFilter`'s `saturate`/`brightness`/`contrast`
+defaults (how dark objects read against the board).
+
 ## Notes / things you may want to extend
 
 - There's no server-side validation, so a determined player could inspect
@@ -179,6 +203,24 @@ npm run dev
   players are marking at once, undo can only step back *your own* device's
   view of "before my last action," not a true shared undo log — good
   enough for casual co-op, not airtight for adversarial use.
+- **Multi-cell objects** (bed, boat, rowboat, car, golf cart) are drawn
+  ONCE across their footprint via a span layer placed on the same CSS grid
+  (`spans` in `GridBoard.jsx`), instead of repeating the icon per cell.
+  Vertical footprints rotate the artwork 90deg and swap its box. Blocking
+  objects (table, shelf, box, trashcan...) are all single-cell in the data
+  and deliberately keep repeating per cell.
+  - Two gotchas worth knowing if you touch this: (1) every grid child now
+    needs EXPLICIT `gridRow`/`gridColumn`. Spans are explicitly placed, and
+    CSS Grid places explicit items before auto-placed ones, so leaving the
+    cells auto-placed made them shuffle around the spans and left holes in
+    the board. (2) The span layer is `pointer-events: none` so taps still
+    reach the cell underneath — marking a cell a boat sits on has to keep
+    working.
+  - Limitation: the icons are square artwork, so a spanning object scales
+    to the span's short axis and centres, then gets a small upscale to read
+    as spanning. It does not truly stretch the way the reference's
+    purpose-drawn elongated boats/cars do — that would need artwork drawn
+    at 2:1, not a square emoji.
 - **Icon coverage**: checked both Twemoji AND OpenMoji's actual, complete
   icon datasets directly (not just guessing from search results) for
   carpet, table, punching bag, easel, puddle, and shrub — neither set has

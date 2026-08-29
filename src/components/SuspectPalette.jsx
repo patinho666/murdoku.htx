@@ -11,6 +11,7 @@ export default function SuspectPalette({
       onToggleLockedPerson(p.name);
       return;
     }
+    if (tool === 'unlock') return;
     setActivePerson(activePerson?.name === p.name ? null : p);
     if (tool !== 'erase') setTool('mark');
   };
@@ -43,7 +44,10 @@ export default function SuspectPalette({
           ⌫ Erase
         </button>
         <button className={tool === 'lock' ? 'tool active' : 'tool'} onClick={() => setTool('lock')} disabled={readOnly}>
-          🔗 Lock to
+          🔒 Lock to
+        </button>
+        <button className={tool === 'unlock' ? 'tool active' : 'tool'} onClick={() => setTool('unlock')} disabled={readOnly}>
+          🔓 Unlock
         </button>
         {isActiveFixed && (
           <button className="tool unfix" onClick={onUnfix} disabled={readOnly}>
@@ -60,8 +64,9 @@ export default function SuspectPalette({
         {tool === 'x' && 'Tap or drag cells to mark as impossible.'}
         {tool === 'erase' && activePerson && `Tap or drag to erase just ${activePerson.name}'s marks.`}
         {tool === 'erase' && !activePerson && 'Tap or drag to clear everything in a cell/row/column.'}
-        {tool === 'lock' && (!lockedPeople || lockedPeople.size < 2) && 'Select 2+ suspects above, then tap a row/column handle (or a cell) to rule out everyone else there.'}
-        {tool === 'lock' && lockedPeople && lockedPeople.size >= 2 && `Tap a row/column handle (or a cell) to restrict it to: ${[...lockedPeople].join(', ')}.`}
+        {tool === 'lock' && (!lockedPeople || lockedPeople.size < 1) && 'Select one or more suspects above, then tap a cell or a row/column handle to reserve it for them.'}
+        {tool === 'lock' && lockedPeople && lockedPeople.size >= 1 && `Tap a cell or a row/column handle to reserve it for: ${[...lockedPeople].join(', ')}.`}
+        {tool === 'unlock' && 'Tap a cell or a row/column handle to remove its lock.'}
         {!activePerson && tool === 'mark' && 'Pick a suspect above to start marking.'}
       </p>
     </div>

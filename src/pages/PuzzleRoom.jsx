@@ -7,6 +7,7 @@ import { useUser } from '../context/UserContext';
 import { useSession, startOrJoinSession } from '../hooks/useSession';
 import { getAllPeople } from '../utils/people';
 import { difficultyClass } from '../utils/difficultyClass';
+import { buildBlockedCellSet } from '../utils/blocking';
 import GridBoard from '../components/GridBoard';
 import SuspectPalette from '../components/SuspectPalette';
 import ClueList from '../components/ClueList';
@@ -59,10 +60,11 @@ export default function PuzzleRoom() {
     session, toggleLetter, setLetterForCells, toggleX, eraseCell, eraseCells,
     erasePersonFromCell, erasePersonFromCells,
     fixPerson, unfixPerson, submitAnswer, restartSession, toggleUsedClue,
-    restoreSnapshot,
+    restoreSnapshot, lockCells, unlockCells,
   } = useSession(sessionId, user);
 
   const people = useMemo(() => (puzzle ? getAllPeople(puzzle) : []), [puzzle]);
+  const blockedCells = useMemo(() => (puzzle ? buildBlockedCellSet(puzzle) : new Set()), [puzzle]);
 
   // Undo history is per-visit only — a fresh mount (new puzzle, or leaving
   // and coming back) starts with an empty stack.
@@ -97,17 +99,29 @@ export default function PuzzleRoom() {
 
   // Erase tool: if a suspect/victim chip is selected, erase only that
   // person's letter from the touched cells; otherwise clear the whole cell
-  // (letters + X). Lock tool: with 2+ suspects selected, rules out every
-  // OTHER suspect's candidate marks there, without deciding between the
-  // locked ones.
-  const excludedFromLock = () => people.filter((p) => !lockedPeople.has(p.name)).map((p) => p.name);
+  // (letters + X). Lock tool: with 1+ suspects selected, reserves the cell
+  // for them — records the lock (so it shows a badge and syncs) and clears
+  // everyone else's candidate marks there.
+  const lockedNames = () => people.filter((p) => lockedPeople.has(p.name)).map((p) => p.name);
+
+  // A row/column fill must skip cells that can't take a mark: ones already
+  // crossed out, and ones nobody could stand in (water without a boat, or a
+  // blocking object). Without this, "fill the row" happily wrote letters
+  // into impossible cells.
+  const markableCells = (cells) => cells.filter(([r, c]) => {
+    const key = `${r}_${c}`;
+    if (blockedCells.has(key)) return false;
+    if (session?.marks?.[key]?.x) return false;
+    return true;
+  });
 
   const handleApplyCell = (r, c, add) => {
     if (tool === 'lock') {
-      if (lockedPeople.size < 2) return;
-      for (const name of excludedFromLock()) erasePersonFromCell(r, c, name);
+      if (lockedPeople.size < 1) return;
+      lockCells([[r, c]], lockedNames());
       return;
     }
+    if (tool === 'unlock') { unlockCells([[r, c]]); return; }
     if (tool === 'x') { if (!!session?.marks?.[`${r}_${c}`]?.x !== add) toggleX(r, c); return; }
     if (tool === 'erase') {
       if (activePerson) erasePersonFromCell(r, c, activePerson.name);
@@ -123,28 +137,23 @@ export default function PuzzleRoom() {
   const rowCells = (r) => Array.from({ length: n }, (_, c) => [r, c]);
   const colCells = (c) => Array.from({ length: n }, (_, r) => [r, c]);
 
-  const handleApplyRow = (r) => {
+  const handleApplyLine = (cells) => {
     if (tool === 'lock') {
-      if (lockedPeople.size < 2) return;
-      for (const name of excludedFromLock()) erasePersonFromCells(rowCells(r), name);
+      if (lockedPeople.size < 1) return;
+      lockCells(markableCells(cells), lockedNames());
       return;
     }
+    if (tool === 'unlock') { unlockCells(cells); return; }
     if (tool === 'erase') {
-      return activePerson ? erasePersonFromCells(rowCells(r), activePerson.name) : eraseCells(rowCells(r));
+      return activePerson ? erasePersonFromCells(cells, activePerson.name) : eraseCells(cells);
     }
-    if (tool === 'mark' && activePerson) return setLetterForCells(rowCells(r), activePerson.name, true);
+    if (tool === 'mark' && activePerson) {
+      return setLetterForCells(markableCells(cells), activePerson.name, true);
+    }
   };
-  const handleApplyCol = (c) => {
-    if (tool === 'lock') {
-      if (lockedPeople.size < 2) return;
-      for (const name of excludedFromLock()) erasePersonFromCells(colCells(c), name);
-      return;
-    }
-    if (tool === 'erase') {
-      return activePerson ? erasePersonFromCells(colCells(c), activePerson.name) : eraseCells(colCells(c));
-    }
-    if (tool === 'mark' && activePerson) return setLetterForCells(colCells(c), activePerson.name, true);
-  };
+
+  const handleApplyRow = (r) => handleApplyLine(rowCells(r));
+  const handleApplyCol = (c) => handleApplyLine(colCells(c));
 
   // Long-press a cell (while a suspect/victim is selected in Mark mode) to
   // fix them there. Long-pressing the cell they're already fixed at again

@@ -1,5 +1,6 @@
 import { OBJECT_LIBRARY } from './objectLibrary';
 import oilSpillIcon from '../assets/icons/oil-spill.svg';
+import tableIcon from '../assets/icons/table.svg';
 
 // Icons are bundled locally (src/assets/emoji) instead of fetched from a
 // CDN at runtime — this is what fixed the "sometimes just keeps loading"
@@ -40,6 +41,7 @@ export function twemojiUrl(emoji) {
 // (CC BY-SA 4.0, credited alongside Twemoji on the Glossary page).
 export const CUSTOM_ICON_URL = {
   'oil slick': oilSpillIcon,
+  'table': tableIcon,
 };
 
 export function iconUrlForType(type) {

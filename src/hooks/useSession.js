@@ -230,6 +230,28 @@ export function useSession(sessionId, user) {
     patch({ [`usedClues.${clueKey}`]: !current });
   }, [session, patch]);
 
+  // Locking: records WHICH people a cell is reserved for, as persistent
+  // state (so it survives reload and syncs to other players), and clears
+  // everyone else's candidate marks there. `names` is the locked set.
+  const lockCells = useCallback((cells, names) => {
+    if (!session || !names?.length) return;
+    const fields = {};
+    for (const [r, c] of cells) {
+      const key = cellKey(r, c);
+      fields[`marks.${key}.lock`] = [...names];
+      const current = session.marks?.[key]?.letters || [];
+      const kept = current.filter((n) => names.includes(n));
+      if (kept.length !== current.length) fields[`marks.${key}.letters`] = kept;
+    }
+    patch(fields);
+  }, [session, patch]);
+
+  const unlockCells = useCallback((cells) => {
+    const fields = {};
+    for (const [r, c] of cells) fields[`marks.${cellKey(r, c)}.lock`] = deleteField();
+    patch(fields);
+  }, [patch]);
+
   // Full-object overwrite of marks/fixed, used to restore a snapshot taken
   // before an undoable action. Overwrites rather than merges, since a
   // snapshot needs to fully replace the current state (including removing
@@ -294,6 +316,6 @@ export function useSession(sessionId, user) {
     toggleLetter, setLetterForCells, toggleX, eraseCell, eraseCells,
     erasePersonFromCell, erasePersonFromCells,
     fixPerson, unfixPerson, submitAnswer, restartSession, toggleUsedClue,
-    restoreSnapshot,
+    restoreSnapshot, lockCells, unlockCells,
   };
 }
