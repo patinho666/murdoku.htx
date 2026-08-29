@@ -42,11 +42,37 @@ Firebase Firestore for realtime sync and Netlify for hosting.
 - **Join another player's game** — the puzzle list has a "Have a game ID?"
   field that jumps straight into `/play/{code}`; the in-room Share button
   copies that same link/code for others to paste in.
-- **Board look** — cells are colored by *named area* (not raw terrain),
-  with a thicker black border wherever two different areas meet and each
-  area's name stamped in its bottom-most cell, closer to a hand-illustrated
-  case-board look. Terrain still shows a small badge (💧) where it matters
-  (e.g. water) since some clues depend on it.
+- **Board icons** — object icons on the board, the puzzle-list thumbnails,
+  and the glossary reference all pull from
+  [Twemoji](https://github.com/twitter/twemoji) (Twitter's open-source
+  emoji artwork, CC-BY 4.0), loaded as SVGs from a pinned GitHub release
+  tag rather than relying on the OS's built-in emoji font — so every
+  device shows the exact same colorful, consistent artwork instead of
+  however Apple/Android/etc. happen to draw their own version of 🦈/🪨/etc.
+  Attribution is credited on the Glossary page per the license. The
+  type → emoji mapping lives in one place, `src/data/objectIcons.js` — the
+  URL builder there also has a small fallback: if an icon ever fails to
+  load (e.g. offline), it falls back to the plain emoji character so
+  nothing breaks.
+- **Area textures** — each named area gets a color *and* a texture
+  (checkerboard, stripes, diagonal planks, speckle, or ripple), generated
+  in `src/utils/areaPatterns.js` from that area's own color family rather
+  than fixed art assets — no image files needed, and it scales to any
+  puzzle automatically. Swap in real illustrated tile art later by
+  replacing `buildPatternStyle()`'s CSS output with `background-image`
+  URLs if you want photographic textures instead.
+- **Undo a fix** — press-and-hold the same cell a suspect is already fixed
+  to (again) to unfix them, or use the "Unfix [name]" button that appears
+  in the palette once they're selected and fixed. Note: unfixing removes
+  the `fixed` entry and restores their letter as a normal candidate mark
+  at that cell, but it does **not** automatically un-X the rest of that
+  row/column — those X's may still be valid deductions, or may need
+  clearing by hand with the Erase tool if the fix itself was the mistake.
+- **Blocked cells** — cells that can't hold anyone (water without a boat,
+  or a blocking object) simply don't respond to taps; there's no separate
+  graying/hatching for them anymore, only for cells that are actually
+  crossed out with the X tool. The object's icon itself is usually enough
+  of a visual cue for why a cell is off-limits.
 - **Submit** — only enabled once every suspect + victim is fixed. Correct
   answers mark the session (and every *currently connected* player's
   progress doc) as completed and route to the finish page. Wrong answers

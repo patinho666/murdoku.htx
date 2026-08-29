@@ -1,5 +1,5 @@
 export default function SuspectPalette({
-  people, activePerson, setActivePerson, tool, setTool,
+  people, activePerson, setActivePerson, tool, setTool, isActiveFixed, onUnfix,
 }) {
   return (
     <div className="palette">
@@ -25,9 +25,15 @@ export default function SuspectPalette({
         <button className={tool === 'erase' ? 'tool active' : 'tool'} onClick={() => setTool('erase')}>
           ⌫ Erase
         </button>
+        {isActiveFixed && (
+          <button className="tool unfix" onClick={onUnfix}>
+            ↺ Unfix {activePerson?.name}
+          </button>
+        )}
       </div>
       <p className="palette-hint">
-        {tool === 'mark' && activePerson && `Tap/drag to mark cells ${activePerson.name} could be in. Press and hold a cell to fix them there.`}
+        {tool === 'mark' && activePerson && !isActiveFixed && `Tap/drag to mark cells ${activePerson.name} could be in. Press and hold a cell to fix them there.`}
+        {tool === 'mark' && activePerson && isActiveFixed && `${activePerson.name} is fixed. Press and hold their cell again — or tap "Unfix" above — to undo it.`}
         {tool === 'x' && 'Tap or drag cells to mark as impossible.'}
         {tool === 'erase' && activePerson && `Tap or drag to erase just ${activePerson.name}'s marks.`}
         {tool === 'erase' && !activePerson && 'Tap or drag to clear everything in a cell/row/column.'}

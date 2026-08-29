@@ -1,14 +1,20 @@
 import { cellKey } from './cellKey';
 import { AREA_COLORS } from '../data/objectLibrary';
+import { buildPatternStyle } from './areaPatterns';
 
-// Assigns each area a color, builds a per-cell area lookup, and picks one
-// anchor cell per area (bottom-most, then right-most cell of that area) to
-// place its name label — mirrors how the reference board labels areas at
-// the bottom edge of their block.
+// Assigns each area a color + a textured pattern (checker/stripes/planks/
+// speckle/ripple, cycling independently of color so combinations vary),
+// builds a per-cell area lookup, and picks one anchor cell per area
+// (bottom-most, then right-most cell of that area) to place its name label.
 export function buildAreaLayout(puzzle) {
   const areaNames = Object.keys(puzzle.areas);
   const colorByArea = {};
-  areaNames.forEach((name, i) => { colorByArea[name] = AREA_COLORS[i % AREA_COLORS.length]; });
+  const styleByArea = {};
+  areaNames.forEach((name, i) => {
+    const color = AREA_COLORS[i % AREA_COLORS.length];
+    colorByArea[name] = color;
+    styleByArea[name] = buildPatternStyle(color, i);
+  });
 
   const areaByCell = {};
   areaNames.forEach((name) => {
@@ -27,5 +33,5 @@ export function buildAreaLayout(puzzle) {
     labelAnchor[cellKey(anchor[0], anchor[1])] = name;
   });
 
-  return { colorByArea, areaByCell, labelAnchor };
+  return { colorByArea, styleByArea, areaByCell, labelAnchor };
 }

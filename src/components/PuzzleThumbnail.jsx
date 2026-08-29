@@ -1,28 +1,23 @@
-import { TERRAIN_COLOR, AREA_PALETTE } from '../data/objectLibrary';
+import { buildAreaLayout } from '../utils/areaLayout';
+import { OBJECT_EMOJI, FALLBACK_EMOJI, twemojiUrl } from '../data/objectIcons';
 
 export default function PuzzleThumbnail({ puzzle, size = 120 }) {
   const n = puzzle.grid_size;
   const cell = size / n;
-  const terrainByCell = {};
-  for (const t of puzzle.terrain) terrainByCell[`${t.cell[0]}_${t.cell[1]}`] = t.type;
-
-  const areaNames = Object.keys(puzzle.areas);
-  const areaByCell = {};
-  areaNames.forEach((name, idx) => {
-    for (const [r, c] of puzzle.areas[name].cells) areaByCell[`${r}_${c}`] = idx;
-  });
+  const { areaByCell, styleByArea } = buildAreaLayout(puzzle);
 
   const rects = [];
   for (let r = 0; r < n; r++) {
     for (let c = 0; c < n; c++) {
       const key = `${r}_${c}`;
-      const terrain = terrainByCell[key] || 'floor';
+      const areaName = areaByCell[key];
+      const style = styleByArea[areaName];
       rects.push(
         <rect
           key={key}
           x={c * cell} y={r * cell} width={cell} height={cell}
-          fill={TERRAIN_COLOR[terrain] || '#ddd'}
-          stroke="rgba(0,0,0,0.15)"
+          fill={style?.backgroundColor || '#e2e8f0'}
+          stroke="rgba(0,0,0,0.2)"
           strokeWidth="0.5"
         />
       );
@@ -32,22 +27,20 @@ export default function PuzzleThumbnail({ puzzle, size = 120 }) {
   return (
     <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} style={{ borderRadius: 8, display: 'block' }}>
       {rects}
-      {puzzle.objects?.map((o) => o.cells.map(([r, c], i) => (
-        <text
-          key={`${o.id}_${i}`}
-          x={c * cell + cell / 2}
-          y={r * cell + cell / 2 + cell * 0.15}
-          fontSize={cell * 0.55}
-          textAnchor="middle"
-        >
-          {ICONS[o.type] || '•'}
-        </text>
-      )))}
+      {puzzle.objects?.map((o) => o.cells.map(([r, c], i) => {
+        const emoji = OBJECT_EMOJI[o.type] || FALLBACK_EMOJI;
+        const iconSize = cell * 0.62;
+        return (
+          <image
+            key={`${o.id}_${i}`}
+            href={twemojiUrl(emoji)}
+            x={c * cell + (cell - iconSize) / 2}
+            y={r * cell + (cell - iconSize) / 2}
+            width={iconSize}
+            height={iconSize}
+          />
+        );
+      }))}
     </svg>
   );
 }
-
-const ICONS = {
-  rock: '🪨', door: '🚪', chair: '🪑', carpet: '🟫', shark: '🦈', box: '📦',
-  boat: '🛶', rowboat: '🚣', 'lily pad': '🌸', crocodile: '🐊', shrub: '🌿', flag: '🚩',
-};

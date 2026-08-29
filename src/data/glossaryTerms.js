@@ -92,6 +92,27 @@ export const GLOSSARY_SECTIONS = [
         desc: 'A specific numbered row (rows are numbered starting from 0 in this app, matching the puzzle data).',
         diagram: { cells: [{ r: 3, c: 2, label: 'A', color: '#e11d48' }], dimmedRows: [3] },
       },
+      {
+        term: 'In column N',
+        desc: 'A specific numbered column, same idea as "in row N" but vertical.',
+        diagram: { cells: [{ r: 2, c: 3, label: 'A', color: '#e11d48' }], dimmedCols: [3] },
+      },
+    ],
+  },
+  {
+    id: 'areas',
+    title: 'Areas',
+    entries: [
+      {
+        term: '"...was in the same area as X"',
+        desc: 'Both people are inside the same named area (like "Deck" or "Boathouse") — not just physically close. Two adjacent cells can belong to different areas, so this is about the named region, not distance.',
+        diagram: { cells: [{ r: 2, c: 1, label: 'A', color: '#e11d48' }, { r: 3, c: 2, label: 'B', color: '#2563eb' }] },
+      },
+      {
+        term: '"There was someone [direction] of X, in the same area"',
+        desc: 'A compound clue: some unnamed person shares X\'s area AND sits in that direction relative to X. You don\'t learn who that other person is directly — only that at least one more suspect is in the same area, positioned that way.',
+        diagram: { cells: [{ r: 3, c: 2, label: 'X', color: '#64748b' }, { r: 1, c: 2, label: '?', color: '#94a3b8' }], arrow: { from: [3, 2], to: [1, 2] } },
+      },
     ],
   },
   {
@@ -110,9 +131,14 @@ export const GLOSSARY_SECTIONS = [
     title: 'Exact Counts',
     entries: [
       {
-        term: '"At least N people in [area]"',
-        desc: 'A minimum headcount for an area — more than N is fine, fewer is not.',
-        diagram: { cells: [{ r: 1, c: 1, label: 'A', color: '#e11d48' }, { r: 1, c: 2, label: 'B', color: '#2563eb' }, { r: 2, c: 1, label: 'C', color: '#16a34a' }] },
+        term: '"There was/were exactly N people on/in [object or area]"',
+        desc: 'A precise headcount, not a minimum — exactly that many, no more and no fewer.',
+        diagram: { cells: [{ r: 1, c: 1, label: 'A', color: '#e11d48' }, { r: 1, c: 2, label: 'B', color: '#2563eb' }] },
+      },
+      {
+        term: '"Nobody was on/in X"',
+        desc: 'A zero-count clue — that object, terrain, or area is empty. No suspect and not the victim either.',
+        diagram: { cells: [{ r: 2, c: 2, label: '∅', color: '#64748b' }] },
       },
     ],
   },
@@ -140,6 +166,11 @@ export const GLOSSARY_SECTIONS = [
         term: 'Not on X, but beside X',
         desc: 'Adjacent to a terrain or object without being on/in it — e.g. next to water but not standing in it.',
         diagram: { cells: [{ r: 2, c: 2, label: 'A', color: '#e11d48' }, { r: 2, c: 3, label: '≈', color: '#7fb8d6' }] },
+      },
+      {
+        term: 'Role references (e.g. "the smuggler", "the informant")',
+        desc: 'Some clues point at a suspect by a hidden role instead of their name — "Ada was exactly 8 rows north of the smuggler." The smuggler IS one of the suspects, but which one is never stated directly; you have to work it out from how the role is used across the other clues, the same way you work out anyone else\'s position. Once you know who holds the role, every clue that mentions it becomes an ordinary clue about that suspect.',
+        diagram: null,
       },
     ],
   },

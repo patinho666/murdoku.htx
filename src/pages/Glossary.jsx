@@ -2,6 +2,7 @@ import { useNavigate } from 'react-router-dom';
 import { GLOSSARY_SECTIONS } from '../data/glossaryTerms';
 import { OBJECT_LIBRARY } from '../data/objectLibrary';
 import MiniGrid from '../components/MiniGrid';
+import ObjectGlyph from '../components/ObjectGlyph';
 
 export default function Glossary() {
   const navigate = useNavigate();
@@ -56,7 +57,7 @@ export default function Glossary() {
         <div className="object-grid">
           {Object.entries(OBJECT_LIBRARY).map(([name, info]) => (
             <div key={name} className="object-entry">
-              <span className="object-icon">{info.icon}</span>
+              <span className="object-icon"><ObjectGlyph type={name} size={30} /></span>
               <span className="object-name">{name}</span>
               <span className="object-blocking">{info.blocking ? 'Blocks movement' : `Standable${info.prep ? ` (${info.prep})` : ''}`}</span>
             </div>
@@ -65,6 +66,7 @@ export default function Glossary() {
       </section>
 
       <a className="back-to-top" href="#top">↑ Top</a>
+      <p className="icon-credit">Icons: <a href="https://twemoji.twitter.com" target="_blank" rel="noreferrer">Twemoji</a>, licensed CC-BY 4.0.</p>
     </div>
   );
 }

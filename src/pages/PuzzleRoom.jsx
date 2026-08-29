@@ -54,7 +54,7 @@ export default function PuzzleRoom() {
   const {
     session, toggleLetter, setLetterForCells, toggleX, eraseCell, eraseCells,
     erasePersonFromCell, erasePersonFromCells,
-    fixPerson, submitAnswer, restartSession, toggleUsedClue,
+    fixPerson, unfixPerson, submitAnswer, restartSession, toggleUsedClue,
   } = useSession(sessionId, user);
 
   const people = useMemo(() => (puzzle ? getAllPeople(puzzle) : []), [puzzle]);
@@ -104,10 +104,21 @@ export default function PuzzleRoom() {
   };
 
   // Long-press a cell (while a suspect/victim is selected in Mark mode) to
-  // fix them there directly.
+  // fix them there. Long-pressing the cell they're already fixed at again
+  // undoes the fix — the way to correct a mistake.
   const handleFixAt = (r, c) => {
     if (!activePerson) return;
-    fixPerson(activePerson.name, r, c, n);
+    const already = session?.fixed?.[activePerson.name];
+    if (already && already[0] === r && already[1] === c) {
+      unfixPerson(activePerson.name);
+    } else {
+      fixPerson(activePerson.name, r, c, n);
+    }
+  };
+
+  const activeFixedCell = activePerson ? session?.fixed?.[activePerson.name] : null;
+  const handleUnfixActive = () => {
+    if (activePerson) unfixPerson(activePerson.name);
   };
 
   const handleSubmit = async () => {
@@ -156,6 +167,8 @@ export default function PuzzleRoom() {
           setActivePerson={setActivePerson}
           tool={tool}
           setTool={setTool}
+          isActiveFixed={!!activeFixedCell}
+          onUnfix={handleUnfixActive}
         />
 
         <ClueList puzzle={puzzle} usedClues={session?.usedClues} onToggleUsed={toggleUsedClue} />

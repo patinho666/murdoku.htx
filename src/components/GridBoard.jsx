@@ -3,17 +3,7 @@ import { cellKey } from '../utils/cellKey';
 import { buildAreaLayout } from '../utils/areaLayout';
 import { buildBlockedCellSet } from '../utils/blocking';
 import CellMarks from './CellMarks';
-
-const OBJECT_ICON = {
-  rock: '🪨', door: '🚪', chair: '🪑', carpet: '🟫', shark: '🦈', box: '📦',
-  boat: '🛶', rowboat: '🚣', 'lily pad': '🌸', crocodile: '🐊', shrub: '🌿',
-  flag: '🚩', tree: '🌲', barrel: '🛢️', bed: '🛏️', table: '🍽️', shelf: '📚',
-  trashcan: '🗑️', safe: '🔒', statue: '🗿', TV: '📺', painting: '🖼️',
-  plant: '🪴', flowers: '💐', bonsai: '🌳', camera: '📷', easel: '🎨',
-  register: '🧾', present: '🎁', 'teddy bear': '🧸', cactus: '🌵',
-  bear: '🐻', boar: '🐗', lion: '🦁', elephant: '🐘', penguin: '🐧',
-  horse: '🐴', car: '🚗', 'golf cart': '🛺', puddle: '💧', 'golf tee': '⛳',
-};
+import ObjectGlyph from './ObjectGlyph';
 
 const LONG_PRESS_MS = 550;
 const MOVE_CANCEL_PX = 10;
@@ -27,7 +17,7 @@ export default function GridBoard({
   const dragState = useRef(null);
   const pressState = useRef(null);
 
-  const { colorByArea, areaByCell, labelAnchor } = buildAreaLayout(puzzle);
+  const { styleByArea, areaByCell, labelAnchor } = buildAreaLayout(puzzle);
   const blocked = buildBlockedCellSet(puzzle);
 
   const terrainByCell = {};
@@ -155,18 +145,24 @@ export default function GridBoard({
                 <div
                   key={key}
                   data-cell data-r={r} data-c={c}
-                  className={`cell${isBlocked ? ' cell-blocked' : ''}${isCrossed ? ' cell-crossed' : ''}`}
+                  className={`cell${isCrossed ? ' cell-crossed' : ''}`}
                   style={{
-                    background: colorByArea[areaName] || '#e2e8f0',
+                    ...(styleByArea[areaName] || { backgroundColor: '#e2e8f0' }),
                     borderRightWidth: borderRight ? 3 : 1,
                     borderBottomWidth: borderBottom ? 3 : 1,
                   }}
                   onPointerDown={(e) => handlePointerDown(e, r, c)}
                 >
-                  {terrain === 'water' && <span className="terrain-badge">💧</span>}
+                  {terrain === 'water' && (
+                    <span className="terrain-badge">
+                      <ObjectGlyph type="puddle" size={11} dropShadow={false} />
+                    </span>
+                  )}
                   {obj && (
                     <span className="cell-object">
-                      <span className="cell-object-icon">{OBJECT_ICON[obj] || '❔'}</span>
+                      <span className="cell-object-icon">
+                        <ObjectGlyph type={obj} size={16} />
+                      </span>
                     </span>
                   )}
                   {!isBlocked && (
