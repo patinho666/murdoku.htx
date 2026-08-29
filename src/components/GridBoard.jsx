@@ -155,14 +155,12 @@ export default function GridBoard({
                 >
                   {terrain === 'water' && (
                     <span className="terrain-badge">
-                      <ObjectGlyph type="puddle" size={11} dropShadow={false} />
+                      <ObjectGlyph type="puddle" size="100%" dropShadow={false} />
                     </span>
                   )}
                   {obj && (
                     <span className="cell-object">
-                      <span className="cell-object-icon">
-                        <ObjectGlyph type={obj} size={16} />
-                      </span>
+                      <ObjectGlyph type={obj} size="100%" />
                     </span>
                   )}
                   {!isBlocked && (

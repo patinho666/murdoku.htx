@@ -95,17 +95,12 @@ h1, h2, h3 { margin: 0.2em 0; font-family: 'Fredoka', 'Nunito', sans-serif; }
   border-left-width: 1px;
 }
 .terrain-badge {
-  position: absolute; top: 2px; right: 2px; opacity: 0.9; line-height: 1;
+  position: absolute; top: 4%; right: 4%; width: 22%; height: 22%; opacity: 0.9;
   display: flex; align-items: center; justify-content: center;
 }
 .cell-object {
-  position: absolute; top: 2px; left: 2px; display: flex; align-items: center; justify-content: center;
-}
-.cell-object-icon {
+  position: absolute; top: 5%; left: 5%; width: 48%; height: 48%;
   display: flex; align-items: center; justify-content: center;
-  width: 24px; height: 24px;
-  background: rgba(255,255,255,0.9); border-radius: 7px;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.3);
 }
 .area-label {
   position: absolute; left: 3px; bottom: 2px; right: 3px;
