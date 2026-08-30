@@ -246,24 +246,10 @@ export default function GridBoard({
                       <ObjectGlyph type="puddle" size="100%" dropShadow={false} />
                     </span>
                   )}
-                  {isCarpet && (
-                    <span
-                      className="cell-rug"
-                      style={{
-                        background: shadeColor(areaBase, -16),
-                        borderColor: shadeColor(areaBase, -34),
-                        borderTopWidth: carpetCells.has(cellKey(r - 1, c)) ? 0 : 3,
-                        borderBottomWidth: carpetCells.has(cellKey(r + 1, c)) ? 0 : 3,
-                        borderLeftWidth: carpetCells.has(cellKey(r, c - 1)) ? 0 : 3,
-                        borderRightWidth: carpetCells.has(cellKey(r, c + 1)) ? 0 : 3,
-                        top: carpetCells.has(cellKey(r - 1, c)) ? 0 : '8%',
-                        bottom: carpetCells.has(cellKey(r + 1, c)) ? 0 : '8%',
-                        left: carpetCells.has(cellKey(r, c - 1)) ? 0 : '8%',
-                        right: carpetCells.has(cellKey(r, c + 1)) ? 0 : '8%',
-                      }}
+                  }
                     />
                   )}
-                  {obj && !isCarpet && !spanCells.has(key) && (
+                  {obj && !spanCells.has(key) && (
                     <span className="cell-object">
                       <ObjectGlyph type={obj} size="100%" tint={areaBase} />
                     </span>
