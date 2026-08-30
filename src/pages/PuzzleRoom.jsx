@@ -32,24 +32,35 @@ export default function PuzzleRoom() {
 
   // Resolve whether `param` is a puzzle id (start/resume own game) or a
   // shared session id (join someone else's game).
+  //
+  // When `param` is a puzzle we already have bundled, the board is drawn
+  // IMMEDIATELY from local data and the Firestore handshake continues in
+  // the background. Previously the whole screen sat on "Loading..." until
+  // several sequential round trips finished — invisible on desktop wifi,
+  // but seconds of blank screen on a phone. A shared session link still has
+  // to wait, because until that document is read we don't know which puzzle
+  // it even refers to.
   useEffect(() => {
     let cancelled = false;
     async function resolve() {
-      setResolving(true);
       const directPuzzle = getPuzzle(param);
       if (directPuzzle) {
+        setPuzzle(directPuzzle);
+        setResolving(false);          // draw the board now
         const id = await startOrJoinSession(directPuzzle, user, null);
-        if (!cancelled) { setPuzzle(directPuzzle); setSessionId(id); setResolving(false); }
+        if (!cancelled) setSessionId(id);
         return;
       }
+      setResolving(true);
       const snap = await getDoc(doc(db, 'sessions', param));
       if (!snap.exists()) {
-        if (!cancelled) { setResolving(false); }
+        if (!cancelled) setResolving(false);
         return;
       }
       const p = getPuzzle(snap.data().puzzleId);
+      if (!cancelled) { setPuzzle(p); setResolving(false); }
       const id = await startOrJoinSession(p, user, param);
-      if (!cancelled) { setPuzzle(p); setSessionId(id); setResolving(false); }
+      if (!cancelled) setSessionId(id);
     }
     resolve();
     return () => { cancelled = true; };
@@ -223,6 +234,10 @@ export default function PuzzleRoom() {
         <span className={`difficulty ${difficultyClass(puzzle.difficulty)}`}>{puzzle.difficulty}</span>
         <ConnectedPlayers players={session?.players} currentUserId={user.id} />
       </div>
+
+      {!sessionId && (
+        <div className="connecting-note">Connecting…  your marks will sync once this clears.</div>
+      )}
 
       {isSolved && (
         <div className="solved-banner">🔒 SOLVED — tap Restart below to play again</div>

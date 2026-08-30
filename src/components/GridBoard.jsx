@@ -4,6 +4,7 @@ import { buildAreaLayout } from '../utils/areaLayout';
 import { buildBlockedCellSet } from '../utils/blocking';
 import { buildPatternStyle } from '../utils/areaPatterns';
 import { TERRAIN_COLOR } from '../data/objectLibrary';
+import { terrainTextureStyle, hasTerrainTexture } from '../data/terrainTextures';
 import { shadeColor } from '../utils/color';
 import CellMarks from './CellMarks';
 import ObjectGlyph from './ObjectGlyph';
@@ -15,8 +16,14 @@ const MOVE_CANCEL_PX = 10;
 // area they belong to (a quick visual read of "this is water/grass" is
 // more useful than area-color consistency there); every other terrain
 // keeps using its area's color.
-const WATER_STYLE = buildPatternStyle(TERRAIN_COLOR.water, 4); // ripple pattern
-const GRASS_STYLE = buildPatternStyle(TERRAIN_COLOR.grass, 3); // speckle pattern
+// A custom tile in src/assets/terrain/<terrain>.svg wins; otherwise fall
+// back to the generated CSS pattern.
+const WATER_STYLE = terrainTextureStyle('water') || buildPatternStyle(TERRAIN_COLOR.water, 4);
+const GRASS_STYLE = terrainTextureStyle('grass') || buildPatternStyle(TERRAIN_COLOR.grass, 3);
+const SAND_STYLE = terrainTextureStyle('sand');
+const PATH_STYLE = terrainTextureStyle('path');
+const FLOOR_STYLE = terrainTextureStyle('floor');
+const EXTRA_TERRAIN_STYLE = { sand: SAND_STYLE, path: PATH_STYLE, floor: FLOOR_STYLE };
 
 function canInteract(tool, isBlockedCell) {
   // Marking a candidate only makes sense where someone could actually
@@ -218,7 +225,8 @@ export default function GridBoard({
                 : (colorByArea[areaName] || '#e2e8f0');
               const cellStyle = terrain === 'water' ? WATER_STYLE
                 : terrain === 'grass' ? GRASS_STYLE
-                : (styleByArea[areaName] || { backgroundColor: '#e2e8f0' });
+                : EXTRA_TERRAIN_STYLE[terrain]
+                || (styleByArea[areaName] || { backgroundColor: '#e2e8f0' });
               return (
                 <div
                   key={key}
@@ -233,7 +241,7 @@ export default function GridBoard({
                   }}
                   onPointerDown={(e) => handlePointerDown(e, r, c)}
                 >
-                  {terrain === 'water' && !obj && (
+                  {terrain === 'water' && !obj && !hasTerrainTexture('water') && (
                     <span className="terrain-badge">
                       <ObjectGlyph type="puddle" size="100%" dropShadow={false} />
                     </span>

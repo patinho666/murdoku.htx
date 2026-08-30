@@ -24,7 +24,7 @@ export async function startOrJoinSession(puzzle, user, sessionIdFromLink) {
   if (sessionIdFromLink) {
     const snap = await getDoc(sessionRef(sessionIdFromLink));
     if (snap.exists()) {
-      await joinSession(sessionIdFromLink, user);
+      await joinSession(sessionIdFromLink, user, snap.data());
       return sessionIdFromLink;
     }
     // Link was stale/invalid — fall through and create a fresh one instead.
@@ -36,13 +36,13 @@ export async function startOrJoinSession(puzzle, user, sessionIdFromLink) {
     const existing = progData.sessionId;
     const existingSessionSnap = await getDoc(sessionRef(existing));
     if (existingSessionSnap.exists()) {
-      await joinSession(existing, user);
+      await joinSession(existing, user, existingSessionSnap.data());
       return existing;
     }
   }
 
   const sessionId = nanoid();
-  await setDoc(sessionRef(sessionId), {
+  await Promise.all([setDoc(sessionRef(sessionId), {
     puzzleId: puzzle.id,
     createdAt: serverTimestamp(),
     updatedAt: serverTimestamp(),
@@ -52,35 +52,44 @@ export async function startOrJoinSession(puzzle, user, sessionIdFromLink) {
     fixed: {},
     usedClues: {},
     status: 'active',
-  });
-  await setDoc(progressRef(user.id, puzzle.id), {
+  }), setDoc(progressRef(user.id, puzzle.id), {
     sessionId,
     status: 'in_progress',
     lastPlayed: serverTimestamp(),
-  }, { merge: true });
+  }, { merge: true })]);
   return sessionId;
 }
 
-async function joinSession(sessionId, user) {
-  await updateDoc(sessionRef(sessionId), {
-    [`players.${user.id}`]: { name: user.name, connected: true, lastSeen: serverTimestamp() },
-    everPlayers: arrayUnion(user.id),
-    updatedAt: serverTimestamp(),
-  });
-  const snap = await getDoc(sessionRef(sessionId));
-  const data = snap.data();
-  const puzzleId = data?.puzzleId;
-  if (puzzleId) {
+async function joinSession(sessionId, user, knownData) {
+  // `knownData` is the session snapshot the caller already fetched. Without
+  // it this re-read the same document, adding a whole extra round trip to
+  // every puzzle open. The two writes are independent, so they go in
+  // parallel rather than in series.
+  let data = knownData;
+  if (!data) {
+    const snap = await getDoc(sessionRef(sessionId));
+    data = snap.data();
+  }
+  const writes = [
+    updateDoc(sessionRef(sessionId), {
+      [`players.${user.id}`]: { name: user.name, connected: true, lastSeen: serverTimestamp() },
+      everPlayers: arrayUnion(user.id),
+      updatedAt: serverTimestamp(),
+    }),
+  ];
+  if (data?.puzzleId) {
     // Don't downgrade a completed puzzle back to "in progress" just by
     // opening it again — mirror the session's actual status instead of
     // hardcoding one.
-    await setDoc(progressRef(user.id, puzzleId), {
+    writes.push(setDoc(progressRef(user.id, data.puzzleId), {
       sessionId,
       status: data.status === 'completed' ? 'completed' : 'in_progress',
       lastPlayed: serverTimestamp(),
-    }, { merge: true });
+    }, { merge: true }));
   }
+  await Promise.all(writes);
 }
+
 
 export function useSession(sessionId, user) {
   const [session, setSession] = useState(null);

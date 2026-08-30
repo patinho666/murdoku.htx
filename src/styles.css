@@ -57,6 +57,10 @@ h1, h2, h3 { margin: 0.2em 0; font-family: 'Fredoka', 'Nunito', sans-serif; }
 .room-header { display: flex; align-items: center; justify-content: space-between; padding: 12px 14px; gap: 8px; }
 .room-header h1 { font-size: 18px; flex: 1; text-align: center; }
 .room-meta { display: flex; gap: 10px; align-items: center; padding: 0 14px 10px; flex-wrap: wrap; font-size: 13px; }
+.connecting-note {
+  margin: 0 14px 10px; background: #1e293b; color: #94a3b8; text-align: center;
+  padding: 6px; border-radius: 8px; font-size: 12px;
+}
 .solved-banner {
   margin: 0 14px 10px; background: #166534; color: #dcfce7; text-align: center;
   padding: 8px; border-radius: 8px; font-weight: 700; font-size: 13px;
@@ -77,6 +81,15 @@ h1, h2, h3 { margin: 0.2em 0; font-family: 'Fredoka', 'Nunito', sans-serif; }
   grid-template-rows: 26px repeat(var(--n), 1fr);
   width: min(94vw, 420px);
   aspect-ratio: 1;
+}
+/* iOS Safari below 15 ignores aspect-ratio, which would collapse the board
+   to zero height (a blank screen that looks like "it never loaded"). This
+   padding-box trick reserves a square in that case, and is harmlessly
+   overridden where aspect-ratio IS supported. */
+@supports not (aspect-ratio: 1) {
+  .board-grid::before { content: ''; grid-area: 1 / 1; padding-bottom: 100%; }
+}
+.board-grid {
   gap: 0;
   background: #0f172a;
   padding: 6px;
@@ -243,3 +256,27 @@ h1, h2, h3 { margin: 0.2em 0; font-family: 'Fredoka', 'Nunito', sans-serif; }
 .back-to-top { display: block; text-align: center; color: #2563eb; font-size: 13px; margin-top: 10px; }
 .icon-credit { text-align: center; color: #94a3b8; font-size: 11px; margin-top: 6px; }
 .icon-credit a { color: #94a3b8; }
+
+
+/* ---------- On-device debugging ---------- */
+.debug-overlay {
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 9999;
+  background: #7f1d1d; color: #fee2e2; font: 11px/1.4 ui-monospace, Menlo, monospace;
+  max-height: 55vh; display: flex; flex-direction: column;
+  border-top: 2px solid #fca5a5;
+}
+.debug-bar { display: flex; justify-content: space-between; align-items: center; padding: 6px 10px; }
+.debug-bar button {
+  background: #fee2e2; color: #7f1d1d; border: none; border-radius: 6px;
+  padding: 4px 10px; margin-left: 6px; font-size: 11px; font-weight: 700;
+}
+.debug-body { margin: 0; padding: 8px 10px; overflow: auto; white-space: pre-wrap; word-break: break-word; }
+.crash-screen { color: #e2e8f0; padding: 20px; font: 13px/1.5 -apple-system, sans-serif; }
+.crash-screen pre {
+  background: #1e293b; padding: 10px; border-radius: 8px;
+  white-space: pre-wrap; word-break: break-word; font-size: 11px; max-height: 50vh; overflow: auto;
+}
+.crash-actions button {
+  background: #22c55e; color: #fff; border: none; border-radius: 8px;
+  padding: 10px 14px; margin-right: 8px; font-weight: 700;
+}

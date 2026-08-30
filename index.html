@@ -9,6 +9,22 @@
   </head>
   <body>
     <div id="root"></div>
+    <noscript>JavaScript is required.</noscript>
+    <script>
+      // Runs before the app bundle. If the bundle itself fails to parse or
+      // throws on load, React never mounts and the page would otherwise be
+      // blank with no explanation — so show it here instead.
+      window.__earlyErrors = [];
+      window.addEventListener('error', function (e) {
+        window.__earlyErrors.push((e.message || 'error') + ' @ ' + (e.filename || '') + ':' + (e.lineno || ''));
+        var r = document.getElementById('root');
+        if (r && !r.hasChildNodes()) {
+          r.innerHTML = '<div style="font:13px -apple-system,sans-serif;color:#fff;padding:16px">'
+            + '<h3>App failed to start</h3><pre style="white-space:pre-wrap;background:#1e293b;padding:10px;border-radius:8px">'
+            + window.__earlyErrors.join('\n') + '\n\nUA: ' + navigator.userAgent + '</pre></div>';
+        }
+      });
+    </script>
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>

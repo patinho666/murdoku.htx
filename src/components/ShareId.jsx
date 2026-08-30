@@ -6,6 +6,12 @@ import { useState } from 'react';
 export default function ShareId({ sessionId }) {
   const [copied, setCopied] = useState(false);
 
+  // The board now renders before the session handshake finishes, so this
+  // can be called with no id yet.
+  if (!sessionId) {
+    return <button className="share-btn" disabled>ID: …</button>;
+  }
+
   const copy = async () => {
     try {
       await navigator.clipboard.writeText(sessionId);

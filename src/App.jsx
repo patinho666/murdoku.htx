@@ -1,4 +1,6 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import ErrorBoundary from './components/ErrorBoundary';
+import DebugOverlay from './components/DebugOverlay';
 import { UserProvider, useUser } from './context/UserContext';
 import Login from './pages/Login';
 import PuzzleList from './pages/PuzzleList';
@@ -14,7 +16,9 @@ function Gate({ children }) {
 
 export default function App() {
   return (
-    <UserProvider>
+    <ErrorBoundary>
+      <DebugOverlay />
+      <UserProvider>
       <BrowserRouter>
         <Gate>
           <Routes>
@@ -25,6 +29,7 @@ export default function App() {
           </Routes>
         </Gate>
       </BrowserRouter>
-    </UserProvider>
+      </UserProvider>
+    </ErrorBoundary>
   );
 }

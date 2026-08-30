@@ -28,14 +28,25 @@ export function UserProvider({ children }) {
     const id = makeUserId(trimmed);
     const ref = doc(db, 'users', id);
 
-    // Keep whichever capitalization was used the very first time someone
-    // logged into this account, so the displayed name doesn't flip-flop
-    // depending on who typed it last (e.g. "JOAO" then later "joao").
-    const existing = await getDoc(ref);
-    const displayName = existing.exists() && existing.data().name ? existing.data().name : trimmed;
+    // Log in OPTIMISTICALLY. This used to await a read and a write before
+    // letting anyone in, so on a phone you stared at the name box for a
+    // round trip or two. Nothing here needs to block the UI: the id is
+    // derived locally from the name, and the profile write is
+    // fire-and-forget.
+    setUser({ id, name: trimmed });
 
-    await setDoc(ref, { name: displayName, lastLogin: serverTimestamp() }, { merge: true });
-    setUser({ id, name: displayName });
+    try {
+      // Keep whichever capitalization was used the very first time someone
+      // logged into this account, so the displayed name doesn't flip-flop
+      // depending on who typed it last (e.g. "JOAO" then later "joao").
+      const existing = await getDoc(ref);
+      const displayName = existing.exists() && existing.data().name ? existing.data().name : trimmed;
+      await setDoc(ref, { name: displayName, lastLogin: serverTimestamp() }, { merge: true });
+      if (displayName !== trimmed) setUser({ id, name: displayName });
+    } catch {
+      // Offline or slow: the local session still works and the profile
+      // write will happen on a later login.
+    }
   }
 
   function logout() {

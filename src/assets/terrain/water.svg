@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40" preserveAspectRatio="none">
+  <!-- Placeholder water tile. Replace this file with your own artwork.
+       Designed to tile edge-to-edge: the wave shapes are mirrored at the
+       left/right borders so adjacent cells line up. -->
+  <rect width="40" height="40" fill="#7fb8d6"/>
+  <g fill="none" stroke="#9fcde4" stroke-width="2.2" stroke-linecap="round">
+    <path d="M-4 9 q6 -4 12 0 t12 0 t12 0 t12 0"/>
+    <path d="M-4 21 q6 -4 12 0 t12 0 t12 0 t12 0"/>
+    <path d="M-4 33 q6 -4 12 0 t12 0 t12 0 t12 0"/>
+  </g>
+  <g fill="none" stroke="#6aa8c9" stroke-width="1.4" stroke-linecap="round" opacity="0.8">
+    <path d="M-4 15 q6 -3 12 0 t12 0 t12 0 t12 0"/>
+    <path d="M-4 27 q6 -3 12 0 t12 0 t12 0 t12 0"/>
+  </g>
+</svg>
