@@ -1,4 +1,4 @@
-import { useRef } from 'react';
+import { useRef, useMemo } from 'react';
 import { cellKey } from '../utils/cellKey';
 import { buildAreaLayout } from '../utils/areaLayout';
 import { buildBlockedCellSet } from '../utils/blocking';
@@ -36,46 +36,48 @@ export default function GridBoard({
   const dragState = useRef(null);
   const pressState = useRef(null);
 
-  const { colorByArea, styleByArea, areaByCell, labelAnchor } = buildAreaLayout(puzzle);
-  const blocked = buildBlockedCellSet(puzzle);
+  // These derive only from `puzzle`, but were re-running on every render -
+  // i.e. on every realtime update from Firestore. On a 12x12 board that
+  // meant rebuilding gradient strings for every area and rescanning 144
+  // cells each time another player moved, which is a large part of why big
+  // boards crawled on phones.
+  const { colorByArea, styleByArea, areaByCell, labelAnchor } = useMemo(
+    () => buildAreaLayout(puzzle), [puzzle],
+  );
+  const blocked = useMemo(() => buildBlockedCellSet(puzzle), [puzzle]);
 
-  const terrainByCell = {};
-  for (const t of puzzle.terrain) terrainByCell[cellKey(t.cell[0], t.cell[1])] = t.type;
-  const objectByCell = {};
-  for (const o of puzzle.objects || []) {
-    for (const c of o.cells) objectByCell[cellKey(c[0], c[1])] = o.type;
-  }
-  // Carpets are drawn as tinted rectangles (like the reference boards)
-  // rather than as an icon. Adjacent carpet cells merge into one rug by
-  // only drawing the outer edges of the run.
-  const carpetCells = new Set();
-  for (const o of puzzle.objects || []) {
-    if (o.type === 'carpet') for (const c of o.cells) carpetCells.add(cellKey(c[0], c[1]));
-  }
-
-  // Multi-cell objects (bed, boat, rowboat, car, golf cart) are drawn ONCE
-  // across their whole footprint instead of repeating the icon in each
-  // cell. In this data every multi-cell object is non-blocking and every
-  // blocking object (table, shelf, box...) is single-cell, so keying off
-  // cell count leaves those repeating per-cell exactly as before.
-  const spans = [];
-  const spanCells = new Set();
-  for (const o of puzzle.objects || []) {
-    if (!o.cells || o.cells.length < 2 || o.type === 'carpet') continue;
-    const rs = o.cells.map((x) => x[0]);
-    const cs = o.cells.map((x) => x[1]);
-    const r0 = Math.min(...rs);
-    const c0 = Math.min(...cs);
-    spans.push({
-      key: `span-${o.id}-${r0}-${c0}`,
-      type: o.type,
-      r: r0,
-      c: c0,
-      rows: Math.max(...rs) - r0 + 1,
-      cols: Math.max(...cs) - c0 + 1,
-    });
-    for (const cc of o.cells) spanCells.add(cellKey(cc[0], cc[1]));
-  }
+  // Same rationale as above: derived from `puzzle` only.
+  const { terrainByCell, objectByCell, carpetCells, spans, spanCells } = useMemo(() => {
+    const terrainByCell = {};
+    for (const t of puzzle.terrain) terrainByCell[cellKey(t.cell[0], t.cell[1])] = t.type;
+    const objectByCell = {};
+    for (const o of puzzle.objects || []) {
+      for (const c of o.cells) objectByCell[cellKey(c[0], c[1])] = o.type;
+    }
+    const carpetCells = new Set();
+    for (const o of puzzle.objects || []) {
+      if (o.type === 'carpet') for (const c of o.cells) carpetCells.add(cellKey(c[0], c[1]));
+    }
+    const spans = [];
+    const spanCells = new Set();
+    for (const o of puzzle.objects || []) {
+      if (!o.cells || o.cells.length < 2 || o.type === 'carpet') continue;
+      const rs = o.cells.map((x) => x[0]);
+      const cs = o.cells.map((x) => x[1]);
+      const r0 = Math.min(...rs);
+      const c0 = Math.min(...cs);
+      spans.push({
+        key: `span-${o.id}-${r0}-${c0}`,
+        type: o.type,
+        r: r0,
+        c: c0,
+        rows: Math.max(...rs) - r0 + 1,
+        cols: Math.max(...cs) - c0 + 1,
+      });
+      for (const cc of o.cells) spanCells.add(cellKey(cc[0], cc[1]));
+    }
+    return { terrainByCell, objectByCell, carpetCells, spans, spanCells };
+  }, [puzzle]);
 
   const fixedByCell = {};
   for (const [name, cell] of Object.entries(session?.fixed || {})) {

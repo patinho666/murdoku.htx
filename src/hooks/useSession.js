@@ -246,11 +246,25 @@ export function useSession(sessionId, user) {
     patch(fields);
   }, [session, patch]);
 
-  const unlockCells = useCallback((cells) => {
+  // Unlock. With `names`, removes only those people from each cell's lock
+  // (dropping the lock entirely once it would be empty); without, clears
+  // the whole lock.
+  const unlockCells = useCallback((cells, names) => {
+    if (!session) return;
     const fields = {};
-    for (const [r, c] of cells) fields[`marks.${cellKey(r, c)}.lock`] = deleteField();
-    patch(fields);
-  }, [patch]);
+    for (const [r, c] of cells) {
+      const key = cellKey(r, c);
+      const current = session.marks?.[key]?.lock;
+      if (!current || !current.length) continue;
+      if (!names || !names.length) {
+        fields[`marks.${key}.lock`] = deleteField();
+        continue;
+      }
+      const kept = current.filter((n) => !names.includes(n));
+      fields[`marks.${key}.lock`] = kept.length ? kept : deleteField();
+    }
+    if (Object.keys(fields).length) patch(fields);
+  }, [session, patch]);
 
   // Full-object overwrite of marks/fixed, used to restore a snapshot taken
   // before an undoable action. Overwrites rather than merges, since a

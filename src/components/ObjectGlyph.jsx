@@ -21,13 +21,18 @@ export default function ObjectGlyph({ type, size = 16, dropShadow = true, tint, 
 
   const filters = [];
   if (tint) filters.push(tintFilter(tint));
-  if (dropShadow) filters.push('drop-shadow(0 1px 1.5px rgba(0,0,0,0.55))');
+  // A BLURRED drop-shadow is by far the most expensive thing here: mobile
+  // Safari rasterises and blurs each one separately, and a 12x12 board can
+  // carry 40+ of them. A zero-blur shadow gives almost the same edge
+  // definition for a fraction of the cost.
+  if (dropShadow) filters.push('drop-shadow(0 1px 0 rgba(0,0,0,0.45))');
 
   return (
     <img
       src={url}
       alt={type}
       draggable={false}
+      decoding="async"
       className={className}
       style={{
         width: dimension,

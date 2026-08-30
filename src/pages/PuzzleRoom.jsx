@@ -104,14 +104,24 @@ export default function PuzzleRoom() {
   // everyone else's candidate marks there.
   const lockedNames = () => people.filter((p) => lockedPeople.has(p.name)).map((p) => p.name);
 
+  // A lock RESERVES a cell for a set of people, so it has to keep excluding
+  // everyone else from then on - not just clear their marks at the moment
+  // the lock was applied.
+  const lockAllows = (r, c, personName) => {
+    const lock = session?.marks?.[`${r}_${c}`]?.lock;
+    if (!lock || !lock.length) return true;
+    return lock.includes(personName);
+  };
+
   // A row/column fill must skip cells that can't take a mark: ones already
   // crossed out, and ones nobody could stand in (water without a boat, or a
   // blocking object). Without this, "fill the row" happily wrote letters
   // into impossible cells.
-  const markableCells = (cells) => cells.filter(([r, c]) => {
+  const markableCells = (cells, personName) => cells.filter(([r, c]) => {
     const key = `${r}_${c}`;
     if (blockedCells.has(key)) return false;
     if (session?.marks?.[key]?.x) return false;
+    if (personName && !lockAllows(r, c, personName)) return false;
     return true;
   });
 
@@ -121,7 +131,7 @@ export default function PuzzleRoom() {
       lockCells([[r, c]], lockedNames());
       return;
     }
-    if (tool === 'unlock') { unlockCells([[r, c]]); return; }
+    if (tool === 'unlock') { unlockCells([[r, c]], lockedNames()); return; }
     if (tool === 'x') { if (!!session?.marks?.[`${r}_${c}`]?.x !== add) toggleX(r, c); return; }
     if (tool === 'erase') {
       if (activePerson) erasePersonFromCell(r, c, activePerson.name);
@@ -129,6 +139,7 @@ export default function PuzzleRoom() {
       return;
     }
     if (tool === 'mark' && activePerson) {
+      if (!lockAllows(r, c, activePerson.name)) return;
       const has = (session?.marks?.[`${r}_${c}`]?.letters || []).includes(activePerson.name);
       if (has !== add) toggleLetter(r, c, activePerson.name);
     }
@@ -143,12 +154,12 @@ export default function PuzzleRoom() {
       lockCells(markableCells(cells), lockedNames());
       return;
     }
-    if (tool === 'unlock') { unlockCells(cells); return; }
+    if (tool === 'unlock') { unlockCells(cells, lockedNames()); return; }
     if (tool === 'erase') {
       return activePerson ? erasePersonFromCells(cells, activePerson.name) : eraseCells(cells);
     }
     if (tool === 'mark' && activePerson) {
-      return setLetterForCells(markableCells(cells), activePerson.name, true);
+      return setLetterForCells(markableCells(cells, activePerson.name), activePerson.name, true);
     }
   };
 

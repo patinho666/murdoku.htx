@@ -121,14 +121,13 @@ h1, h2, h3 { margin: 0.2em 0; font-family: 'Fredoka', 'Nunito', sans-serif; }
   position: relative;
   pointer-events: none;
   z-index: 2;
-  padding: 2%;
-  /* The artwork is square, so it scales to the span's SHORT axis and
-     centres. Scaling it up a little makes a 2-cell object read as
-     genuinely spanning rather than as one icon floating in the middle,
-     at the cost of slight bleed past the footprint. */
-  overflow: visible;
+  padding: 3%;
+  /* Artwork for these types is tight-cropped (see objectIcons.js), so it
+     already fills the footprint and is properly centred. Nothing is scaled
+     past the span, and overflow is clipped as a hard guarantee that a
+     multi-cell object can never bleed into a neighbouring cell. */
+  overflow: hidden;
 }
-.cell-object-span .span-inner img { transform: scale(1.28); }
 .cell-object-span .span-inner {
   position: absolute;
   top: 50%;

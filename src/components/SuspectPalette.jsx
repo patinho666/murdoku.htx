@@ -7,16 +7,15 @@ export default function SuspectPalette({
 }) {
   const handleChipClick = (p) => {
     if (readOnly) return;
-    if (tool === 'lock') {
+    if (tool === 'lock' || tool === 'unlock') {
       onToggleLockedPerson(p.name);
       return;
     }
-    if (tool === 'unlock') return;
     setActivePerson(activePerson?.name === p.name ? null : p);
     if (tool !== 'erase') setTool('mark');
   };
 
-  const isChipActive = (p) => (tool === 'lock' ? lockedPeople?.has(p.name) : activePerson?.name === p.name);
+  const isChipActive = (p) => ((tool === 'lock' || tool === 'unlock') ? lockedPeople?.has(p.name) : activePerson?.name === p.name);
 
   return (
     <div className="palette">
@@ -64,9 +63,10 @@ export default function SuspectPalette({
         {tool === 'x' && 'Tap or drag cells to mark as impossible.'}
         {tool === 'erase' && activePerson && `Tap or drag to erase just ${activePerson.name}'s marks.`}
         {tool === 'erase' && !activePerson && 'Tap or drag to clear everything in a cell/row/column.'}
-        {tool === 'lock' && (!lockedPeople || lockedPeople.size < 1) && 'Select one or more suspects above, then tap a cell or a row/column handle to reserve it for them.'}
+        {tool === 'lock' && (!lockedPeople || lockedPeople.size < 1) && 'Select one or more suspects above, then tap a cell or a row/column handle to reserve it for them - everyone else is then blocked from being marked there.'}
         {tool === 'lock' && lockedPeople && lockedPeople.size >= 1 && `Tap a cell or a row/column handle to reserve it for: ${[...lockedPeople].join(', ')}.`}
-        {tool === 'unlock' && 'Tap a cell or a row/column handle to remove its lock.'}
+        {tool === 'unlock' && (!lockedPeople || lockedPeople.size === 0) && 'Tap a cell or a row/column handle to clear its lock entirely. Select suspects above to unlock just them.'}
+        {tool === 'unlock' && lockedPeople && lockedPeople.size > 0 && `Tap a cell or a row/column handle to unlock only: ${[...lockedPeople].join(', ')}.`}
         {!activePerson && tool === 'mark' && 'Pick a suspect above to start marking.'}
       </p>
     </div>
