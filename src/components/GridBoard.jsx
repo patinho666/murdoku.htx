@@ -5,7 +5,6 @@ import { buildBlockedCellSet } from '../utils/blocking';
 import { buildPatternStyle } from '../utils/areaPatterns';
 import { TERRAIN_COLOR } from '../data/objectLibrary';
 import { terrainTextureStyle, hasTerrainTexture } from '../data/terrainTextures';
-import { shadeColor } from '../utils/color';
 import CellMarks from './CellMarks';
 import ObjectGlyph from './ObjectGlyph';
 
@@ -54,21 +53,17 @@ export default function GridBoard({
   const blocked = useMemo(() => buildBlockedCellSet(puzzle), [puzzle]);
 
   // Same rationale as above: derived from `puzzle` only.
-  const { terrainByCell, objectByCell, carpetCells, spans, spanCells } = useMemo(() => {
+  const { terrainByCell, objectByCell, spans, spanCells } = useMemo(() => {
     const terrainByCell = {};
     for (const t of puzzle.terrain) terrainByCell[cellKey(t.cell[0], t.cell[1])] = t.type;
     const objectByCell = {};
     for (const o of puzzle.objects || []) {
       for (const c of o.cells) objectByCell[cellKey(c[0], c[1])] = o.type;
     }
-    const carpetCells = new Set();
-    for (const o of puzzle.objects || []) {
-      if (o.type === 'carpet') for (const c of o.cells) carpetCells.add(cellKey(c[0], c[1]));
-    }
     const spans = [];
     const spanCells = new Set();
     for (const o of puzzle.objects || []) {
-      if (!o.cells || o.cells.length < 2 || o.type === 'carpet') continue;
+      if (!o.cells || o.cells.length < 2) continue;
       const rs = o.cells.map((x) => x[0]);
       const cs = o.cells.map((x) => x[1]);
       const r0 = Math.min(...rs);
@@ -83,7 +78,7 @@ export default function GridBoard({
       });
       for (const cc of o.cells) spanCells.add(cellKey(cc[0], cc[1]));
     }
-    return { terrainByCell, objectByCell, carpetCells, spans, spanCells };
+    return { terrainByCell, objectByCell, spans, spanCells };
   }, [puzzle]);
 
   const fixedByCell = {};
@@ -219,7 +214,6 @@ export default function GridBoard({
               const label = labelAnchor[key];
               const borderRight = c === n - 1 || areaByCell[cellKey(r, c + 1)] !== areaName;
               const borderBottom = r === n - 1 || areaByCell[cellKey(r + 1, c)] !== areaName;
-              const isCarpet = carpetCells.has(key);
               const areaBase = terrain === 'water' ? TERRAIN_COLOR.water
                 : terrain === 'grass' ? TERRAIN_COLOR.grass
                 : (colorByArea[areaName] || '#e2e8f0');
@@ -245,9 +239,6 @@ export default function GridBoard({
                     <span className="terrain-badge">
                       <ObjectGlyph type="puddle" size="100%" dropShadow={false} />
                     </span>
-                  )}
-                  }
-                    />
                   )}
                   {obj && !spanCells.has(key) && (
                     <span className="cell-object">
