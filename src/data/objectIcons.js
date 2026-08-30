@@ -1,16 +1,12 @@
 import { OBJECT_LIBRARY } from './objectLibrary';
-import oilSpillIcon from '../assets/icons/oil-spill.svg';
 // Multi-cell objects, re-exported with a TIGHT viewBox. Twemoji draws on a
 // 36x36 canvas and these wide shapes sit LOW on it (a car occupies roughly
 // y=13.6-35.4), so `object-fit: contain` on the full square rendered them
 // hugging the bottom of a horizontal span - and hugging the left once
 // rotated for a vertical span. Cropping to the real geometry bounds
 // centres them and lets them fill the footprint.
-import rowboatIcon from '../assets/icons/rowboat.svg';
-import carIcon from '../assets/icons/car.svg';
-import bedIcon from '../assets/icons/bed.svg';
-import golfCartIcon from '../assets/icons/golf-cart.svg';
 import tableIcon from '../assets/icons/table.svg';
+import barrelIcon from '../assets/icons/barrel.svg';
 
 // Icons are bundled locally (src/assets/emoji) instead of fetched from a
 // CDN at runtime — this is what fixed the "sometimes just keeps loading"
@@ -50,12 +46,8 @@ export function twemojiUrl(emoji) {
 // over any emoji stand-in, so that one is bundled here from OpenMoji
 // (CC BY-SA 4.0, credited alongside Twemoji on the Glossary page).
 export const CUSTOM_ICON_URL = {
-  'oil slick': oilSpillIcon,
   'table': tableIcon,
-  rowboat: rowboatIcon,
-  car: carIcon,
-  bed: bedIcon,
-  'golf cart': golfCartIcon,
+'barrel': barrelIcon,
 };
 
 export function iconUrlForType(type) {
