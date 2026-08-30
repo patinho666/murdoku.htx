@@ -28,7 +28,7 @@ import horseIcon from '../assets/icons/horse.svg';
 import houseIcon from '../assets/icons/house.svg';
 import lilypadIcon from '../assets/icons/lilypad.svg';
 import lionIcon from '../assets/icons/lion.svg';
-import oilspillIcon from '../assets/icons/oilspill.svg';
+import oilslickIcon from '../assets/icons/oilslick.svg';
 import paintingIcon from '../assets/icons/painting.svg';
 import paintspillIcon from '../assets/icons/paintspill.svg';
 import penguinIcon from '../assets/icons/penguin.svg';
@@ -37,6 +37,20 @@ import registerIcon from '../assets/icons/register.svg';
 import shrubIcon from '../assets/icons/shrub.svg';
 import shelfIcon from '../assets/icons/shelf.svg';
 import tableIcon from '../assets/icons/table.svg';
+import carpetIcon from '../assets/icons/carpet.svg';
+import doorIcon from '../assets/icons/door.svg';
+import plantIcon from '../assets/icons/plant.svg';
+import presentIcon from '../assets/icons/present.svg';
+import punchingbagIcon from '../assets/icons/punchingbag.svg';
+import rockIcon from '../assets/icons/rock.svg';
+import rowboatIcon from '../assets/icons/rowboat.svg';
+import safeIcon from '../assets/icons/safe.svg';
+import sharkIcon from '../assets/icons/shark.svg';
+import statueIcon from '../assets/icons/statue.svg';
+import teddybearIcon from '../assets/icons/teddybear.svg';
+import trashcanIcon from '../assets/icons/trashcan.svg';
+import treeIcon from '../assets/icons/tree.svg';
+import tvIcon from '../assets/icons/tv.svg';
 
 // Icons are bundled locally (src/assets/emoji) instead of fetched from a
 // CDN at runtime — this is what fixed the "sometimes just keeps loading"
@@ -99,7 +113,7 @@ export const CUSTOM_ICON_URL = {
 'house': houseIcon,
 'lily pad': lilypadIcon,
 'lion': lionIcon,
-'oil spill': oilspillIcon,
+'oil slick': oilslickIcon,
 'painting': paintingIcon,
 'paint spill': paintspillIcon,
 'penguin': penguinIcon,
@@ -108,7 +122,20 @@ export const CUSTOM_ICON_URL = {
 'shrub': shrubIcon,
 'shelf': shelfIcon,
 'table': tableIcon,
-
+'carpet': carpetIcon,
+'door': doorIcon,
+'plant': plantIcon,
+'present': presentIcon,
+'punching bag': punchingbagIcon,
+'rock': rockIcon,
+'rowboat': rowboatIcon,
+'safe': safeIcon,
+'shark': sharkIcon,
+'statue': statueIcon,
+'teddy bear': teddybearIcon,
+'trashcan': trashcanIcon,
+'tree': treeIcon,
+'TV': tvIcon,
 };
 
 export function iconUrlForType(type) {
