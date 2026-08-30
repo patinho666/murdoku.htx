@@ -5,8 +5,38 @@ import { OBJECT_LIBRARY } from './objectLibrary';
 // hugging the bottom of a horizontal span - and hugging the left once
 // rotated for a vertical span. Cropping to the real geometry bounds
 // centres them and lets them fill the footprint.
-import tableIcon from '../assets/icons/table.svg';
 import barrelIcon from '../assets/icons/barrel.svg';
+import bearIcon from '../assets/icons/bear.svg';
+import bedIcon from '../assets/icons/bed.svg';
+import boarIcon from '../assets/icons/boar.svg';
+import bonsaiIcon from '../assets/icons/bonsai.svg';
+import boxIcon from '../assets/icons/box.svg';
+import cactusIcon from '../assets/icons/cactus.svg';
+import cameraIcon from '../assets/icons/camera.svg';
+import carIcon from '../assets/icons/car.svg';
+import catapultIcon from '../assets/icons/catapult.svg';
+import chairIcon from '../assets/icons/chair.svg';
+import crateIcon from '../assets/icons/crate.svg';
+import crocodileIcon from '../assets/icons/crocodile.svg';
+import easelIcon from '../assets/icons/easel.svg';
+import elephantIcon from '../assets/icons/elephant.svg';
+import flagIcon from '../assets/icons/flag.svg';
+import flowersIcon from '../assets/icons/flowers.svg';
+import golfcartIcon from '../assets/icons/golfcart.svg';
+import golfteeIcon from '../assets/icons/golftee.svg';
+import horseIcon from '../assets/icons/horse.svg';
+import houseIcon from '../assets/icons/house.svg';
+import lilypadIcon from '../assets/icons/lilypad.svg';
+import lionIcon from '../assets/icons/lion.svg';
+import oilspillIcon from '../assets/icons/oilspill.svg';
+import paintingIcon from '../assets/icons/painting.svg';
+import paintspillIcon from '../assets/icons/paintspill.svg';
+import penguinIcon from '../assets/icons/penguin.svg';
+import puddleIcon from '../assets/icons/puddle.svg';
+import registerIcon from '../assets/icons/register.svg';
+import shrubIcon from '../assets/icons/shrub.svg';
+import shelfIcon from '../assets/icons/shelf.svg';
+import tableIcon from '../assets/icons/table.svg';
 
 // Icons are bundled locally (src/assets/emoji) instead of fetched from a
 // CDN at runtime — this is what fixed the "sometimes just keeps loading"
@@ -46,8 +76,39 @@ export function twemojiUrl(emoji) {
 // over any emoji stand-in, so that one is bundled here from OpenMoji
 // (CC BY-SA 4.0, credited alongside Twemoji on the Glossary page).
 export const CUSTOM_ICON_URL = {
-  'table': tableIcon,
 'barrel': barrelIcon,
+'bear': bearIcon,
+'bed': bedIcon,
+'boar': boarIcon,
+'bonsai': bonsaiIcon,
+'box': boxIcon,
+'cactus': cactusIcon,
+'camera': cameraIcon,
+'car': carIcon,
+'catapult': catapultIcon,
+'chair': chairIcon,
+'crate': crateIcon,
+'crocodile': crocodileIcon,
+'easel': easelIcon,
+'elephant': elephantIcon,
+'flag': flagIcon,
+'flowers': flowersIcon,
+'golf cart': golfcartIcon,
+'golf tee': golfteeIcon,
+'horse': horseIcon,
+'house': houseIcon,
+'lily pad': lilypadIcon,
+'lion': lionIcon,
+'oil spill': oilspillIcon,
+'painting': paintingIcon,
+'paint spill': paintspillIcon,
+'penguin': penguinIcon,
+'puddle': puddleIcon,
+'register': registerIcon,
+'shrub': shrubIcon,
+'shelf': shelfIcon,
+'table': tableIcon,
+
 };
 
 export function iconUrlForType(type) {
