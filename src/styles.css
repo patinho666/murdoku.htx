@@ -301,7 +301,14 @@ h1, h2, h3 { margin: 0.2em 0; font-family: 'Fredoka', 'Nunito', sans-serif; }
   justify-content: center;
   filter: drop-shadow(0 1px 0 rgba(0, 0, 0, 0.5));
 }
-/* Side-by-side cells share a vertical edge, so the door is sized against
-   the pair's height; stacked cells share a horizontal one. */
+/* Side-by-side cells share a VERTICAL dividing line: the door glyph is
+   already drawn upright, so it lies along that line unrotated. */
 .door-vertical .door-inner { height: 62%; width: 31%; }
-.door-horizontal .door-inner { height: 31%; width: 62%; }
+/* Stacked cells share a HORIZONTAL dividing line, so the glyph has to be
+   turned a quarter turn to lie along it. Both boxes work out square, so
+   the rotation needs no width/height swap. */
+.door-horizontal .door-inner {
+  height: 31%;
+  width: 62%;
+  transform: translate(-50%, -50%) rotate(90deg);
+}
