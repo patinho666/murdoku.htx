@@ -53,16 +53,42 @@ export default function GridBoard({
   const blocked = useMemo(() => buildBlockedCellSet(puzzle), [puzzle]);
 
   // Same rationale as above: derived from `puzzle` only.
-  const { terrainByCell, objectByCell, spans, spanCells } = useMemo(() => {
+  const { terrainByCell, objectByCell, spans, spanCells, doorEdges, doorCells } = useMemo(() => {
     const terrainByCell = {};
     for (const t of puzzle.terrain) terrainByCell[cellKey(t.cell[0], t.cell[1])] = t.type;
     const objectByCell = {};
     for (const o of puzzle.objects || []) {
       for (const c of o.cells) objectByCell[cellKey(c[0], c[1])] = o.type;
     }
+    // A door sits ON the division between two regions, not inside a cell:
+    // a person can stand at the door from either side. So a door given as
+    // the TWO adjacent cells it separates is drawn straddling their shared
+    // edge, and neither cell is consumed by it. A door given as a single
+    // cell (older data) still renders as an ordinary in-cell icon.
+    const doorEdges = [];
+    const doorCells = new Set();
+    for (const o of puzzle.objects || []) {
+      if (o.type !== 'door' || !o.cells || o.cells.length !== 2) continue;
+      const [[r1, c1], [r2, c2]] = o.cells;
+      const r0 = Math.min(r1, r2);
+      const c0 = Math.min(c1, c2);
+      doorEdges.push({
+        key: `door-${o.id}-${r0}-${c0}`,
+        r: r0,
+        c: c0,
+        // Cells side by side share a VERTICAL edge; stacked cells share a
+        // horizontal one.
+        vertical: r1 === r2,
+        rows: Math.abs(r1 - r2) + 1,
+        cols: Math.abs(c1 - c2) + 1,
+      });
+      for (const cc of o.cells) doorCells.add(cellKey(cc[0], cc[1]));
+    }
+
     const spans = [];
     const spanCells = new Set();
     for (const o of puzzle.objects || []) {
+      if (o.type === 'door') continue; // handled as an edge above
       if (!o.cells || o.cells.length < 2) continue;
       const rs = o.cells.map((x) => x[0]);
       const cs = o.cells.map((x) => x[1]);
@@ -78,7 +104,7 @@ export default function GridBoard({
       });
       for (const cc of o.cells) spanCells.add(cellKey(cc[0], cc[1]));
     }
-    return { terrainByCell, objectByCell, spans, spanCells };
+    return { terrainByCell, objectByCell, spans, spanCells, doorEdges, doorCells };
   }, [puzzle]);
 
   const fixedByCell = {};
@@ -240,7 +266,7 @@ export default function GridBoard({
                       <ObjectGlyph type="puddle" size="100%" dropShadow={false} />
                     </span>
                   )}
-                  {obj && !spanCells.has(key) && (
+                  {obj && !spanCells.has(key) && !doorCells.has(key) && (
                     <span className="cell-object">
                       <ObjectGlyph type={obj} size="100%" tint={areaBase} />
                     </span>
@@ -251,6 +277,23 @@ export default function GridBoard({
               );
             })}
           </div>
+        ))}
+        {doorEdges.map((d) => (
+          // Placed over BOTH cells, so its centre lands exactly on the
+          // shared edge. It ignores pointer events, because both cells
+          // either side of a door stay fully occupiable and tappable.
+          <span
+            key={d.key}
+            className={`door-edge ${d.vertical ? 'door-vertical' : 'door-horizontal'}`}
+            style={{
+              gridRow: `${d.r + 2} / span ${d.rows}`,
+              gridColumn: `${d.c + 2} / span ${d.cols}`,
+            }}
+          >
+            <span className="door-inner">
+              <ObjectGlyph type="door" size="100%" />
+            </span>
+          </span>
         ))}
         {spans.map((sp) => {
           const anchorKey = cellKey(sp.r, sp.c);

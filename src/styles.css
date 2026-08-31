@@ -280,3 +280,28 @@ h1, h2, h3 { margin: 0.2em 0; font-family: 'Fredoka', 'Nunito', sans-serif; }
   background: #22c55e; color: #fff; border: none; border-radius: 8px;
   padding: 10px 14px; margin-right: 8px; font-weight: 700;
 }
+
+
+/* ---------- Doors on region boundaries ---------- */
+/* A door straddles the line between two cells rather than occupying one.
+   The wrapper covers both cells, so centring the glyph puts it on the
+   shared edge. */
+.door-edge {
+  position: relative;
+  pointer-events: none;
+  z-index: 4;
+}
+.door-edge .door-inner {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  filter: drop-shadow(0 1px 0 rgba(0, 0, 0, 0.5));
+}
+/* Side-by-side cells share a vertical edge, so the door is sized against
+   the pair's height; stacked cells share a horizontal one. */
+.door-vertical .door-inner { height: 62%; width: 31%; }
+.door-horizontal .door-inner { height: 31%; width: 62%; }

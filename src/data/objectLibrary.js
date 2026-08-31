@@ -1,7 +1,7 @@
 export const OBJECT_LIBRARY = {
   chair: { blocking: false, prep: 'sitting in', icon: '🪑' },
   carpet: { blocking: false, prep: 'on', icon: '🟫' },
-  door: { blocking: false, prep: 'in front of', icon: '🚪' },
+  door: { blocking: false, onBoundary: true, prep: 'in front of', icon: '🚪' },
   bed: { blocking: false, prep: 'on', icon: '🛏️' },
   table: { blocking: true, icon: '🍽️' },
   shelf: { blocking: true, icon: '📚' },

@@ -7,7 +7,7 @@ export const GLOSSARY_SECTIONS = [
     entries: [
       {
         term: 'Beside',
-        desc: 'Directly adjacent — up, down, left, or right of a cell or object (not diagonal) — AND in the same named area. A cell that\'s physically next door but across an area boundary (e.g. Deck vs. Boathouse) doesn\'t count as "beside," even though it touches.',
+        desc: 'Directly adjacent — up, down, left, or right of a cell or object (not diagonal) — AND in the same named area. A cell that is physically adjacent but across an area boundary (e.g. Deck vs. Boathouse) does not count as "beside," even though it touches. Doors are the exception: a door sits ON the boundary itself, so you can be beside a door from either area it joins.',
         diagram: { cells: [{ r: 2, c: 2, label: 'X', color: '#64748b' }, { r: 2, c: 3, label: 'A', color: '#e11d48' }] },
       },
       {
@@ -158,13 +158,23 @@ export const GLOSSARY_SECTIONS = [
     title: 'Special Mechanics',
     entries: [
       {
+        term: 'Doors sit ON a boundary — "was in front of the door"',
+        desc: 'A door is drawn on the dividing line between two areas, not inside a cell. It occupies the two cells either side of that line, and a person at the door may be standing in EITHER of them — so "X was in front of the door" narrows X to two cells in two different areas, not to one spot. This also means head-count clues about a door ("there was exactly one person on the door", "nobody was on the door") count both sides of it together.',
+        diagram: { cells: [{ r: 2, c: 1, label: 'A', color: '#e11d48' }, { r: 2, c: 2, label: 'B', color: '#2563eb' }] },
+      },
+      {
+        term: 'Water is occupiable — "was on the water"',
+        desc: 'Water is terrain, not an object, so "X was on the water" tells you only that X is on a water cell — it does NOT tell you how. X may be in a rowboat, on a lily pad, or in the water itself with nothing under them. All three are the same clue. If you also learn "X was in a rowboat" or "X was on a lily pad", that is a SEPARATE clue about the object, and combining the two is what narrows the cell down. Water never blocks by itself; only a blocking object (a rock, a shark, a table) makes a cell impossible.',
+        diagram: { cells: [{ r: 2, c: 2, label: 'A', color: '#e11d48' }] },
+      },
+      {
         term: 'Immediately before/after (ordered areas)',
         desc: 'For themes with numbered/ordered areas (like golf holes or cell blocks), this means the adjacent number either side — e.g. immediately before/after Hole 5 means Hole 4 or Hole 6.',
         diagram: null,
       },
       {
-        term: 'Not on X, but beside X',
-        desc: 'Adjacent to a terrain or object without being on/in it — e.g. next to water but not standing in it.',
+        term: '"Was not in the water, but beside it"',
+        desc: 'A dry cell that is edge-adjacent to at least one water cell — someone standing at the water\'s edge. Since people CAN be in the water, this clue is doing real work: it rules out every water cell AND every dry cell not touching water. Diagonal touching does not count.',
         diagram: { cells: [{ r: 2, c: 2, label: 'A', color: '#e11d48' }, { r: 2, c: 3, label: '≈', color: '#7fb8d6' }] },
       },
       {

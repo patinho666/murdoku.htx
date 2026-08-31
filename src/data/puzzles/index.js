@@ -25,3 +25,4 @@ export const PUZZLES = all.filter((p) => {
 export function getPuzzle(id) {
   return PUZZLES.find((p) => p.id === id) || null;
 }
+

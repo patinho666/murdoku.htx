@@ -59,7 +59,13 @@ export default function Glossary() {
             <div key={name} className="object-entry">
               <span className="object-icon"><ObjectGlyph type={name} size={30} /></span>
               <span className="object-name">{name}</span>
-              <span className="object-blocking">{info.blocking ? 'Blocks movement' : `Standable${info.prep ? ` (${info.prep})` : ''}`}</span>
+              <span className="object-blocking">
+                {info.blocking
+                  ? 'Blocks movement'
+                  : info.onBoundary
+                    ? 'On the area boundary — stand in front of it from either side'
+                    : `Standable${info.prep ? ` (${info.prep})` : ''}`}
+              </span>
             </div>
           ))}
         </div>
