@@ -11,7 +11,17 @@ export default function DebugOverlay() {
   const [open, setOpen] = useState(true);
 
   useEffect(() => {
-    const add = (label, detail) => setErrors((e) => [...e, { label, detail, at: new Date().toISOString() }]);
+    // Transient connectivity errors are NORMAL on mobile — Firestore retries
+    // and recovers on its own. Showing a big red panel for them turns a
+    // non-event into an alarm, and worse, trains people to ignore the panel
+    // so it is useless when something has genuinely broken. Only real
+    // faults get through.
+    const isExpectedNetworkNoise = (text) => /client is offline|Failed to get document because|network error|ERR_INTERNET_DISCONNECTED|Load failed|network request failed/i.test(String(text || ''));
+
+    const add = (label, detail) => {
+      if (isExpectedNetworkNoise(detail)) return;
+      setErrors((e) => [...e, { label, detail, at: new Date().toISOString() }]);
+    };
 
     const onError = (event) => {
       add('error', `${event.message}\n  at ${event.filename}:${event.lineno}:${event.colno}\n${event.error?.stack || ''}`);

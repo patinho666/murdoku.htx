@@ -1,3 +1,5 @@
+import GenderMark from './GenderMark';
+
 function ClueRow({ id, text, used, onToggle }) {
   return (
     <li className={used ? 'clue-used' : ''}>
@@ -9,8 +11,10 @@ function ClueRow({ id, text, used, onToggle }) {
   );
 }
 
-export default function ClueList({ puzzle, usedClues = {}, onToggleUsed }) {
+export default function ClueList({ puzzle, people = [], usedClues = {}, onToggleUsed }) {
   const toggle = (id) => onToggleUsed && onToggleUsed(id);
+  const genderOf = (name) => people.find((p) => p.name === name)?.gender ?? null;
+  const victim = people.find((p) => p.isVictim);
 
   return (
     <div className="clue-list">
@@ -20,7 +24,13 @@ export default function ClueList({ puzzle, usedClues = {}, onToggleUsed }) {
           <ClueRow
             key={name}
             id={`suspect_${name}`}
-            text={<><strong>{name}:</strong> {clue}</>}
+            text={(
+              <>
+                <strong>{name}</strong>
+                <GenderMark gender={genderOf(name)} />
+                <span>: {clue}</span>
+              </>
+            )}
             used={usedClues[`suspect_${name}`]}
             onToggle={toggle}
           />
@@ -42,7 +52,10 @@ export default function ClueList({ puzzle, usedClues = {}, onToggleUsed }) {
           </ul>
         </>
       )}
-      <h3>Victim</h3>
+      <h3>
+        Victim: {puzzle.victim}
+        <GenderMark gender={victim?.gender ?? null} />
+      </h3>
       <ul>
         <ClueRow
           id="victim"

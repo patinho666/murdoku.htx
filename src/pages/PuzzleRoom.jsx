@@ -273,7 +273,7 @@ export default function PuzzleRoom() {
           readOnly={isSolved}
         />
 
-        <ClueList puzzle={puzzle} usedClues={session?.usedClues} onToggleUsed={toggleUsedClue} />
+        <ClueList puzzle={puzzle} people={people} usedClues={session?.usedClues} onToggleUsed={toggleUsedClue} />
 
         <div className="submit-row">
           <button

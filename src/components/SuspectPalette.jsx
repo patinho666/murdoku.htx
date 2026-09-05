@@ -1,3 +1,4 @@
+import GenderMark from './GenderMark';
 export default function SuspectPalette({
   people, activePerson, setActivePerson, tool, setTool,
   isActiveFixed, onUnfix,
@@ -28,7 +29,7 @@ export default function SuspectPalette({
             onClick={() => handleChipClick(p)}
             disabled={readOnly}
           >
-            {p.letter} {p.isVictim ? '(victim)' : ''}
+            {p.letter}<GenderMark gender={p.gender} />{p.isVictim ? ' (victim)' : ''}
           </button>
         ))}
       </div>

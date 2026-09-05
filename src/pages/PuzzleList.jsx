@@ -55,7 +55,7 @@ export default function PuzzleList() {
                 <p className="tease">{puzzle.tease}</p>
                 <div className="meta">
                   <span>{puzzle.grid_size}×{puzzle.grid_size}</span>
-                  {/* <span className={`difficulty ${difficultyClass(puzzle.difficulty)}`}>{puzzle.difficulty}</span> */}
+                  <span className={`difficulty ${difficultyClass(puzzle.difficulty)}`}>{puzzle.difficulty}</span>
                   <span className={`status ${status}`}>
                     {status === 'completed' ? '✅ Solved' : status === 'in_progress' ? '🕓 In progress' : '🆕 New'}
                   </span>
