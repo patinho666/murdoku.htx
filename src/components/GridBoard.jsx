@@ -96,6 +96,7 @@ export default function GridBoard({
       const c0 = Math.min(...cs);
       spans.push({
         key: `span-${o.id}-${r0}-${c0}`,
+        cells: o.cells.map((x) => cellKey(x[0], x[1])),
         type: o.type,
         r: r0,
         c: c0,
@@ -316,7 +317,9 @@ export default function GridBoard({
           return (
             <span
               key={sp.key}
-              className="cell-object-span"
+              className={`cell-object-span${
+                sp.cells.every((k) => session?.marks?.[k]?.x) ? ' span-crossed' : ''
+              }`}
               style={{
                 gridRow: `${sp.r + 2} / span ${sp.rows}`,
                 gridColumn: `${sp.c + 2} / span ${sp.cols}`,
