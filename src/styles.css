@@ -168,11 +168,23 @@ h1, h2, h3 { margin: 0.2em 0; font-family: 'Fredoka', 'Nunito', sans-serif; }
   text-shadow: -1px -1px 0 #fff, 1px -1px 0 #fff, -1px 1px 0 #fff, 1px 1px 0 #fff, 0 1px 2px rgba(0,0,0,0.25);
 }
 .cell-x {
-  position: absolute; inset: 0; z-index: 3;
+  position: absolute; inset: 0; z-index: 5;
   display: flex; align-items: center; justify-content: center;
-  color: #000; font-size: 24px; font-weight: 900; opacity: 0.85;
+  color: #000; font-size: 24px; font-weight: 900;
+  /* Sits above multi-cell spans (beds, boats), which are drawn as a layer
+     over the cells rather than inside them. The light plate behind the
+     glyph keeps it legible on top of any artwork or terrain. */
+  text-shadow:
+    -1.5px -1.5px 0 #fff, 1.5px -1.5px 0 #fff,
+    -1.5px  1.5px 0 #fff, 1.5px  1.5px 0 #fff,
+     0 -1.5px 0 #fff, 0 1.5px 0 #fff, -1.5px 0 0 #fff, 1.5px 0 0 #fff;
 }
 .cell.cell-crossed { filter: brightness(0.82) saturate(0.7); }
+/* A multi-cell object is a SIBLING of the cells it covers, not a child, so
+   the dimming above never reached it: crossing out a bed or boat left the
+   artwork at full brightness while every single-cell object dimmed. That
+   asymmetry is what made the cross look like it was underneath. */
+.cell-object-span.span-crossed { filter: brightness(0.72) saturate(0.55) opacity(0.75); }
 .cell-fixed {
   position: absolute; inset: 2px; border-radius: 6px; color: white; font-weight: 900;
   display: flex; align-items: center; justify-content: center; font-size: 18px;
