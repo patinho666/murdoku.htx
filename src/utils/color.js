@@ -44,7 +44,7 @@ export function hueOf(hex) {
 //   0   = artwork untouched
 // Around 0.45 keeps each object recognisably its own colour while still
 // reading as part of the board's palette. Tune this single number.
-export const TINT_STRENGTH = 0.45;
+export const TINT_STRENGTH = 0.35;
 
 export function tintFilter(hex, { strength = TINT_STRENGTH } = {}) {
   const k = Math.max(0, Math.min(1, strength));
