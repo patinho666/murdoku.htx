@@ -48,6 +48,32 @@ export const OBJECT_LIBRARY = {
 };
 
 // Terrain colors for the mini-map thumbnail / board background
+// Terrain shown in the glossary. NOTE: no terrain blocks — a person can
+// stand on any of these, water included. Only a blocking OBJECT makes a
+// cell impossible. Keep this in step with src/utils/blocking.js.
+export const TERRAIN_INFO = {
+  floor: {
+    label: 'Floor',
+    desc: 'Ordinary indoor flooring — the default when a cell says nothing else. Every room in an indoor theme sits on it, so it tells you nothing on its own.',
+  },
+  path: {
+    label: 'Path',
+    desc: 'A paved or trodden route, usually outdoors or between buildings. "X was on the path" allows every path cell on the board.',
+  },
+  sand: {
+    label: 'Sand',
+    desc: 'Beach, dune or desert ground. Often the dry land next to water — which is what "not in the water, but beside it" is pointing at.',
+  },
+  grass: {
+    label: 'Grass',
+    desc: 'Lawn, field or rough. Drawn in its own green whatever area it belongs to, so it stays recognisable at a glance.',
+  },
+  water: {
+    label: 'Water',
+    desc: 'Lake, river or shallows, drawn in its own blue. A person CAN be in the water — swimming, or in a rowboat or on a lily pad. "X was on the water" does not tell you which.',
+  },
+};
+
 export const TERRAIN_COLOR = {
   floor: '#e5e0d8',
   path: '#d9c9a3',
