@@ -248,27 +248,14 @@ export default function GridBoard({
               const areaBase = terrain === 'water' ? TERRAIN_COLOR.water
                 : terrain === 'grass' ? TERRAIN_COLOR.grass
                 : (colorByArea[areaName] || '#e2e8f0');
-              // A terrain tile (src/assets/terrain/*.svg) is drawn as the
-              // cell's IMAGE, while the area's tint stays as the colour
-              // behind it. Previously the tile replaced the area colour
-              // outright, so on a board that is all one terrain every room
-              // came out identical and the area tints were invisible.
-              const areaStyle = styleByArea[areaName] || { backgroundColor: '#e2e8f0' };
-              const terrainStyle = terrain === 'water' ? WATER_STYLE
+              // A terrain tile (src/assets/terrain/*.svg) is used exactly as
+              // drawn, so the same terrain looks identical in every room —
+              // rooms are told apart by their outline, not by floor colour.
+              const cellStyle = (terrain === 'water' ? WATER_STYLE
                 : terrain === 'grass' ? GRASS_STYLE
-                : EXTRA_TERRAIN_STYLE[terrain];
-              // Water and grass keep their own identity (blue/green) so they
-              // stay instantly recognisable. Every other terrain tile is
-              // MULTIPLIED with the area's tint, so the tile supplies the
-              // texture and the area supplies the colour — that is what
-              // brings room-to-room variation back on a board that is all
-              // one terrain type.
-              const keepsOwnColour = terrain === 'water' || terrain === 'grass';
-              const cellStyle = terrainStyle
-                ? (keepsOwnColour
-                  ? terrainStyle
-                  : { ...terrainStyle, backgroundColor: areaBase, backgroundBlendMode: 'multiply' })
-                : areaStyle;
+                : EXTRA_TERRAIN_STYLE[terrain])
+                || styleByArea[areaName]
+                || { backgroundColor: '#e2e8f0' };
               return (
                 <div
                   key={key}
