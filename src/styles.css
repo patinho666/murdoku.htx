@@ -339,3 +339,18 @@ h1, h2, h3 { margin: 0.2em 0; font-family: 'Fredoka', 'Nunito', sans-serif; }
 .gender-m { color: #60a5fa; }
 .person-chip .gender-mark { margin-left: 2px; font-size: 0.95em; }
 .clue-list h3 .gender-mark { font-size: 0.95em; }
+
+
+/* ---------- Object tinting ---------- */
+/* `isolation: isolate` keeps the blend contained to the icon: without it
+   the colour layer would blend with the board behind the icon too. */
+.glyph-wrap { position: relative; display: block; isolation: isolate; }
+.glyph-tint {
+  position: absolute;
+  inset: 0;
+  mix-blend-mode: color;
+  pointer-events: none;
+  -webkit-mask-size: contain; mask-size: contain;
+  -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat;
+  -webkit-mask-position: center; mask-position: center;
+}
