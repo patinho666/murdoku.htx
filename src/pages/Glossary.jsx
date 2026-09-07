@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import { GLOSSARY_SECTIONS } from '../data/glossaryTerms';
-import { OBJECT_LIBRARY } from '../data/objectLibrary';
+import { OBJECT_LIBRARY, TERRAIN_INFO, TERRAIN_COLOR } from '../data/objectLibrary';
+import { terrainTextureStyle } from '../data/terrainTextures';
 import MiniGrid from '../components/MiniGrid';
 import ObjectGlyph from '../components/ObjectGlyph';
 
@@ -24,6 +25,7 @@ export default function Glossary() {
         {GLOSSARY_SECTIONS.map((s) => (
           <a key={s.id} href={`#${s.id}`}>{s.title}</a>
         ))}
+        <a href="#terrain">Terrain</a>
         <a href="#board-objects">Board Objects</a>
       </nav>
 
@@ -51,6 +53,29 @@ export default function Glossary() {
           </div>
         </section>
       ))}
+
+      <section id="terrain" className="glossary-section">
+        <h2>Terrain</h2>
+        <p className="terrain-note">
+          Terrain is a property of the cell itself, not an object sitting in it.
+          <strong> No terrain blocks anyone</strong> — a person can stand on any of these,
+          water included. Only a blocking object (a rock, a table, a shark) makes a cell impossible.
+        </p>
+        <div className="terrain-grid">
+          {Object.entries(TERRAIN_INFO).map(([name, info]) => (
+            <div key={name} className="terrain-entry">
+              <span
+                className="terrain-swatch"
+                style={terrainTextureStyle(name) || { backgroundColor: TERRAIN_COLOR[name] || '#e2e8f0' }}
+              />
+              <div>
+                <h3>{info.label}</h3>
+                <p>{info.desc}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
 
       <section id="board-objects" className="glossary-section">
         <h2>Board Objects ({Object.keys(OBJECT_LIBRARY).length})</h2>
