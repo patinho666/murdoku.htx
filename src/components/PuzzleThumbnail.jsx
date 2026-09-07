@@ -21,9 +21,11 @@ export default function PuzzleThumbnail({ puzzle, size = 120 }) {
       const areaName = areaByCell[key];
       const terrain = terrainByCell[key] || 'floor';
       const style = styleByArea[areaName];
-      const fillColor = terrain === 'water' ? TERRAIN_COLOR.water
-        : terrain === 'grass' ? TERRAIN_COLOR.grass
-        : (style?.backgroundColor || '#e2e8f0');
+      // The board colours a cell by its TERRAIN (all floor cells look the
+      // same in every room), so the thumbnail has to do the same. It used
+      // to fill by AREA tint, which is why the little preview never matched
+      // the board you actually opened.
+      const fillColor = TERRAIN_COLOR[terrain] || style?.backgroundColor || '#e2e8f0';
       rects.push(
         <rect
           key={key}
