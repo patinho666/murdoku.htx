@@ -8,6 +8,10 @@ import { terrainTextureStyle, hasTerrainTexture } from '../data/terrainTextures'
 import CellMarks from './CellMarks';
 import ObjectGlyph from './ObjectGlyph';
 
+// Area outlines vs. plain cell gridlines.
+const AREA_EDGE = '#0b1020';
+const INNER_EDGE = 'rgba(11, 16, 32, 0.28)';
+
 const LONG_PRESS_MS = 550;
 const MOVE_CANCEL_PX = 10;
 
@@ -244,10 +248,27 @@ export default function GridBoard({
               const areaBase = terrain === 'water' ? TERRAIN_COLOR.water
                 : terrain === 'grass' ? TERRAIN_COLOR.grass
                 : (colorByArea[areaName] || '#e2e8f0');
-              const cellStyle = terrain === 'water' ? WATER_STYLE
+              // A terrain tile (src/assets/terrain/*.svg) is drawn as the
+              // cell's IMAGE, while the area's tint stays as the colour
+              // behind it. Previously the tile replaced the area colour
+              // outright, so on a board that is all one terrain every room
+              // came out identical and the area tints were invisible.
+              const areaStyle = styleByArea[areaName] || { backgroundColor: '#e2e8f0' };
+              const terrainStyle = terrain === 'water' ? WATER_STYLE
                 : terrain === 'grass' ? GRASS_STYLE
-                : EXTRA_TERRAIN_STYLE[terrain]
-                || (styleByArea[areaName] || { backgroundColor: '#e2e8f0' });
+                : EXTRA_TERRAIN_STYLE[terrain];
+              // Water and grass keep their own identity (blue/green) so they
+              // stay instantly recognisable. Every other terrain tile is
+              // MULTIPLIED with the area's tint, so the tile supplies the
+              // texture and the area supplies the colour — that is what
+              // brings room-to-room variation back on a board that is all
+              // one terrain type.
+              const keepsOwnColour = terrain === 'water' || terrain === 'grass';
+              const cellStyle = terrainStyle
+                ? (keepsOwnColour
+                  ? terrainStyle
+                  : { ...terrainStyle, backgroundColor: areaBase, backgroundBlendMode: 'multiply' })
+                : areaStyle;
               return (
                 <div
                   key={key}
@@ -257,8 +278,19 @@ export default function GridBoard({
                     ...cellStyle,
                     gridRow: r + 2,
                     gridColumn: c + 2,
-                    borderRightWidth: borderRight ? 3 : 1,
-                    borderBottomWidth: borderBottom ? 3 : 1,
+                    // A boundary between two AREAS gets a thick, near-black
+                    // line; a division inside the same area gets a thin,
+                    // translucent one. Previously both were the same colour
+                    // and only 3px vs 1px apart, so room outlines were easy
+                    // to lose against a busy board.
+                    borderRightWidth: borderRight ? 5 : 1,
+                    borderBottomWidth: borderBottom ? 5 : 1,
+                    borderRightColor: borderRight ? AREA_EDGE : INNER_EDGE,
+                    borderBottomColor: borderBottom ? AREA_EDGE : INNER_EDGE,
+                    borderTopColor: r === 0 || areaByCell[cellKey(r - 1, c)] !== areaName ? AREA_EDGE : INNER_EDGE,
+                    borderLeftColor: c === 0 || areaByCell[cellKey(r, c - 1)] !== areaName ? AREA_EDGE : INNER_EDGE,
+                    borderTopWidth: r === 0 || areaByCell[cellKey(r - 1, c)] !== areaName ? 2 : 1,
+                    borderLeftWidth: c === 0 || areaByCell[cellKey(r, c - 1)] !== areaName ? 2 : 1,
                   }}
                   onPointerDown={(e) => handlePointerDown(e, r, c)}
                 >
