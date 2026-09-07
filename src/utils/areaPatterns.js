@@ -19,7 +19,12 @@ export const THEME_BASE = {
 // Tint ladder applied across the areas of one puzzle: alternating
 // lighter/darker steps so adjacent areas stay distinguishable while
 // remaining obviously the same family.
-const TINT_STEPS = [0, -14, 10, -24, 20, -7, 15, -18, 5, -30, 25, -11];
+// Spread of tints applied across the areas of one puzzle. Two things drive
+// these numbers: neighbouring areas need enough separation to be told apart
+// at a glance, and the values skew LIGHT because a terrain tile is blended
+// over them with `multiply`, which darkens. Symmetric steps made the darker
+// rooms come out nearly black once multiplied.
+const TINT_STEPS = [8, 34, -6, 48, 20, -14, 40, 2, 27, 56, -2, 14];
 
 const PATTERNS = [
   // checkerboard

@@ -39,8 +39,25 @@ export function hueOf(hex) {
 // so rotate from there to the target hue), then restores contrast — which
 // keeps the internal shading/outlines that a flat silhouette mask would
 // throw away.
-export function tintFilter(hex, { saturate = 2.2, brightness = 0.72, contrast = 1.35 } = {}) {
+// How hard the theme hue is pushed onto object artwork, 0..1.
+//   1   = fully recoloured (everything ends up the same hue — too strong)
+//   0   = artwork untouched
+// Around 0.45 keeps each object recognisably its own colour while still
+// reading as part of the board's palette. Tune this single number.
+export const TINT_STRENGTH = 0.45;
+
+export function tintFilter(hex, { strength = TINT_STRENGTH } = {}) {
+  const k = Math.max(0, Math.min(1, strength));
+  if (k === 0) return '';
   const h = hueOf(hex);
   const rotate = Math.round(h - 40);
-  return `grayscale(1) sepia(1) hue-rotate(${rotate}deg) saturate(${saturate}) brightness(${brightness}) contrast(${contrast})`;
+  // Each parameter is interpolated from "no change" towards the full-tint
+  // values, so lowering `strength` lets the original colours through
+  // instead of flattening everything to one hue.
+  const grayscale = k;
+  const sepia = k;
+  const saturate = (1 + 1.2 * k).toFixed(2);
+  const brightness = (1 - 0.28 * k).toFixed(2);
+  const contrast = (1 + 0.35 * k).toFixed(2);
+  return `grayscale(${grayscale.toFixed(2)}) sepia(${sepia.toFixed(2)}) hue-rotate(${rotate}deg) saturate(${saturate}) brightness(${brightness}) contrast(${contrast})`;
 }
