@@ -110,7 +110,9 @@ h1, h2, h3 { margin: 0.2em 0; font-family: 'Fredoka', 'Nunito', sans-serif; }
   display: flex; align-items: center; justify-content: center;
   user-select: none;
   border-style: solid;
-  border-color: #14213d;
+  /* Per-cell colours/widths are set inline by GridBoard so that an AREA
+     boundary can be drawn differently from an ordinary gridline. */
+  border-color: rgba(11, 16, 32, 0.28);
   border-top-width: 1px;
   border-left-width: 1px;
 }
