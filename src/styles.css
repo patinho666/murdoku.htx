@@ -191,14 +191,18 @@ h1, h2, h3 { margin: 0.2em 0; font-family: 'Fredoka', 'Nunito', sans-serif; }
   left: -22%;
   top: 50%;
   width: 144%;
-  /* Thickness is a PERCENTAGE of the cell, not a fixed pixel value. A fixed
-     3px line is fine on a 5x5 board but eats a fifth of a cell on a 10x10
-     phone board, where cells are only ~34px — which is what buried the
-     object underneath. The floor keeps it visible on very small boards. */
-  height: max(1.5px, 5%);
+  /* Deliberately light. The cross only has to say "ruled out" — the object
+     underneath is half the clue and has to stay readable, especially on a
+     10x10 board where a cell is only ~34px.
+     Thickness is a PERCENTAGE of the cell so it scales with board size; a
+     fixed pixel value that looks thin on a 5x5 swallows a 10x10 cell.
+     To dial it: raise/lower the 2.5% and the two alpha values together.
+     3.5% / 0.72 / 0.7 is noticeably firmer; 2% / 0.5 and no shadow is
+     fainter still. */
+  height: max(1px, 2.5%);
   border-radius: 2px;
-  background: rgba(10, 15, 30, 0.85);
-  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.85);
+  background: rgba(10, 15, 30, 0.6);
+  box-shadow: 0 0 0 0.5px rgba(255, 255, 255, 0.55);
 }
 .cell-x::before { transform: translateY(-50%) rotate(45deg); }
 .cell-x::after  { transform: translateY(-50%) rotate(-45deg); }
