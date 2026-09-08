@@ -181,7 +181,20 @@ h1, h2, h3 { margin: 0.2em 0; font-family: 'Fredoka', 'Nunito', sans-serif; }
     -1.5px  1.5px 0 #fff, 1.5px  1.5px 0 #fff,
      0 -1.5px 0 #fff, 0 1.5px 0 #fff, -1.5px 0 0 #fff, 1.5px 0 0 #fff;
 }
-.cell.cell-crossed { filter: brightness(0.82) saturate(0.7); }
+/* Dimming a crossed-out cell used to use `filter`, but a filter creates a
+   STACKING CONTEXT. That trapped the cross inside the cell's own layer, so
+   its z-index no longer competed with the multi-cell object drawn over the
+   cells — cross one half of a car and the car simply painted over the mark.
+   A translucent veil does the same job with no stacking context, and sits
+   above the cell's contents so it darkens the object too. */
+.cell.cell-crossed::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.24);
+  z-index: 4;
+  pointer-events: none;
+}
 /* A multi-cell object is a SIBLING of the cells it covers, not a child, so
    the dimming above never reached it: crossing out a bed or boat left the
    artwork at full brightness while every single-cell object dimmed. That
