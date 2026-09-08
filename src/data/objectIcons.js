@@ -203,6 +203,15 @@ export const OBJECT_EMOJI = {
   'golf tee': '⛳',
 };
 
+// Creatures are never theme-tinted. A shark or crocodile sits ON water, and
+// the tint colour for a water cell IS the water's own blue — so tinting them
+// painted blue on blue and they became almost invisible. They are also the
+// things a player most needs to spot, so they keep their real colours and
+// get a contrasting outline instead.
+export const UNTINTED_TYPES = new Set([
+  'shark', 'crocodile', 'bear', 'boar', 'lion', 'elephant', 'penguin', 'horse',
+]);
+
 export const WATER_EMOJI = '💧';
 export const FALLBACK_EMOJI = '❔';
 
