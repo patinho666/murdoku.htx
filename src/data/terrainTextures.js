@@ -34,6 +34,13 @@ export function terrainTextureStyle(terrain) {
   };
 }
 
+// The raw tile URL, for callers that need the image itself rather than a
+// ready-made CSS background (the puzzle-list thumbnail paints it into an
+// SVG <pattern>).
+export function terrainTileUrl(terrain) {
+  return textureByTerrain[terrain] || null;
+}
+
 export function hasTerrainTexture(terrain) {
   return Boolean(textureByTerrain[terrain]);
 }
