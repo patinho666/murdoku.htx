@@ -18,7 +18,7 @@ export default function CellMarks({ people, mark, fixedPerson }) {
   if (mark?.x) {
     return (
       <>
-        <div className="cell-x">✕</div>
+        <div className="cell-x" role="img" aria-label="crossed out" />
         {lock?.length > 0 && <LockBadge lock={lock} people={people} />}
       </>
     );
