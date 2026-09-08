@@ -28,6 +28,7 @@ export default function PuzzleThumbnail({ puzzle, size = 120 }) {
   patterns.forEach(({ t }, i) => { patternFor[t] = `terr-${puzzle.id}-${i}`; });
 
   const rects = [];
+  const borders = [];
   for (let r = 0; r < n; r++) {
     for (let c = 0; c < n; c++) {
       const key = `${r}_${c}`;
@@ -46,10 +47,22 @@ export default function PuzzleThumbnail({ puzzle, size = 120 }) {
           key={key}
           x={c * cell} y={r * cell} width={cell} height={cell}
           fill={fillColor}
-          stroke="rgba(0,0,0,0.2)"
+          stroke="rgba(11,16,32,0.28)"
           strokeWidth="0.5"
         />
       );
+      // The board separates AREAS with a thick near-black outline. Without
+      // the same lines here the preview reads as a flat field of terrain
+      // and looks unlike the puzzle you open.
+      const sameArea = (rr, cc) => areaByCell[`${rr}_${cc}`] === areaName;
+      const edge = (x1, y1, x2, y2, k) => (
+        <line key={`${key}-${k}`} x1={x1} y1={y1} x2={x2} y2={y2}
+          stroke="#0b1020" strokeWidth={Math.max(1.2, cell * 0.16)} strokeLinecap="square" />
+      );
+      if (r === 0 || !sameArea(r - 1, c)) borders.push(edge(c * cell, r * cell, (c + 1) * cell, r * cell, 't'));
+      if (r === n - 1 || !sameArea(r + 1, c)) borders.push(edge(c * cell, (r + 1) * cell, (c + 1) * cell, (r + 1) * cell, 'b'));
+      if (c === 0 || !sameArea(r, c - 1)) borders.push(edge(c * cell, r * cell, c * cell, (r + 1) * cell, 'l'));
+      if (c === n - 1 || !sameArea(r, c + 1)) borders.push(edge((c + 1) * cell, r * cell, (c + 1) * cell, (r + 1) * cell, 'r'));
     }
   }
 
@@ -63,6 +76,7 @@ export default function PuzzleThumbnail({ puzzle, size = 120 }) {
         ))}
       </defs>
       {rects}
+      {borders}
       {puzzle.objects?.map((o) => {
         // Draw each object ONCE over its whole footprint rather than once
         // per cell, and apply the SAME theme tint the board applies — the
