@@ -1,7 +1,9 @@
 import { buildAreaLayout } from '../utils/areaLayout';
 import { TERRAIN_COLOR } from '../data/objectLibrary';
+import { terrainTileUrl } from '../data/terrainTextures';
 import { cellKey } from '../utils/cellKey';
-import { iconUrlForType } from '../data/objectIcons';
+import { iconUrlForType, UNTINTED_TYPES } from '../data/objectIcons';
+import { TINT_STRENGTH } from '../utils/color';
 
 export default function PuzzleThumbnail({ puzzle, size = 120 }) {
   const n = puzzle.grid_size;
@@ -14,6 +16,17 @@ export default function PuzzleThumbnail({ puzzle, size = 120 }) {
   const terrainByCell = {};
   for (const t of puzzle.terrain) terrainByCell[cellKey(t.cell[0], t.cell[1])] = t.type;
 
+  // Fill each cell with the REAL terrain tile, via one <pattern> per
+  // terrain type. The thumbnail used to fill flat TERRAIN_COLOR values,
+  // which drifted out of step with the tiles the board actually draws — so
+  // the preview never quite matched the puzzle you opened.
+  const usedTerrains = [...new Set(Object.values(terrainByCell))];
+  const patterns = usedTerrains
+    .map((t) => ({ t, url: terrainTileUrl(t) }))
+    .filter((x) => x.url);
+  const patternFor = {};
+  patterns.forEach(({ t }, i) => { patternFor[t] = `terr-${puzzle.id}-${i}`; });
+
   const rects = [];
   for (let r = 0; r < n; r++) {
     for (let c = 0; c < n; c++) {
@@ -25,7 +38,9 @@ export default function PuzzleThumbnail({ puzzle, size = 120 }) {
       // same in every room), so the thumbnail has to do the same. It used
       // to fill by AREA tint, which is why the little preview never matched
       // the board you actually opened.
-      const fillColor = TERRAIN_COLOR[terrain] || style?.backgroundColor || '#e2e8f0';
+      const fillColor = patternFor[terrain]
+        ? `url(#${patternFor[terrain]})`
+        : (TERRAIN_COLOR[terrain] || style?.backgroundColor || '#e2e8f0');
       rects.push(
         <rect
           key={key}
@@ -40,11 +55,19 @@ export default function PuzzleThumbnail({ puzzle, size = 120 }) {
 
   return (
     <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} style={{ borderRadius: 8, display: 'block' }}>
+      <defs>
+        {patterns.map(({ t, url }, i) => (
+          <pattern key={t} id={`terr-${puzzle.id}-${i}`} patternUnits="userSpaceOnUse" width={cell} height={cell}>
+            <image href={url} x="0" y="0" width={cell} height={cell} preserveAspectRatio="none" />
+          </pattern>
+        ))}
+      </defs>
       {rects}
       {puzzle.objects?.map((o) => {
         // Draw each object ONCE over its whole footprint rather than once
-        // per cell — otherwise a 2-cell door shows as two doors and a
-        // rowboat as two rowboats.
+        // per cell, and apply the SAME theme tint the board applies — the
+        // thumbnail used to draw icons in their raw colours, which is why
+        // the preview never quite matched the puzzle you opened.
         const url = iconUrlForType(o.type);
         if (!url) return null;
         const rs = o.cells.map((x) => x[0]);
@@ -56,20 +79,32 @@ export default function PuzzleThumbnail({ puzzle, size = 120 }) {
         const iconSize = cell * 0.62 * Math.max(spanR, spanC);
         const ix = c * cell + (cell * spanC - iconSize) / 2;
         const iy = r * cell + (cell * spanR - iconSize) / 2;
-        // Artwork is drawn lying along the horizontal, so a footprint that
-        // runs DOWN the board is turned a quarter turn — the board does the
-        // same, and without it a vertical bed shows up lying sideways here.
         const vertical = spanR > spanC;
+        const rot = vertical ? `rotate(90 ${ix + iconSize / 2} ${iy + iconSize / 2})` : undefined;
+        const terrain = terrainByCell[cellKey(r, c)] || 'floor';
+        const tint = UNTINTED_TYPES.has(o.type)
+          ? null
+          : (terrain === 'water' ? TERRAIN_COLOR.water
+            : terrain === 'grass' ? TERRAIN_COLOR.grass
+            : (styleByArea[areaByCell[cellKey(r, c)]]?.backgroundColor || '#e2e8f0'));
+        const maskId = `m-${puzzle.id}-${o.id}`;
         return (
-          <image
-            key={o.id}
-            href={url}
-            x={ix}
-            y={iy}
-            width={iconSize}
-            height={iconSize}
-            transform={vertical ? `rotate(90 ${ix + iconSize / 2} ${iy + iconSize / 2})` : undefined}
-          />
+          <g key={o.id} style={{ isolation: 'isolate' }}>
+            {tint && (
+              <mask id={maskId} maskUnits="userSpaceOnUse" style={{ maskType: 'alpha' }}>
+                <image href={url} x={ix} y={iy} width={iconSize} height={iconSize} transform={rot} />
+              </mask>
+            )}
+            <image href={url} x={ix} y={iy} width={iconSize} height={iconSize} transform={rot} />
+            {tint && (
+              <rect
+                x={ix} y={iy} width={iconSize} height={iconSize}
+                fill={tint} opacity={TINT_STRENGTH}
+                mask={`url(#${maskId})`}
+                style={{ mixBlendMode: 'color' }}
+              />
+            )}
+          </g>
         );
       })}
     </svg>

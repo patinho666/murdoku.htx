@@ -10,7 +10,7 @@ import { TINT_STRENGTH } from '../utils/color';
 // hue family so objects belong to the board instead of reading as stickers
 // pasted on top. Left off (e.g. in the glossary) the original full-colour
 // artwork shows, which is what you want for a reference chart.
-export default function ObjectGlyph({ type, size = 16, dropShadow = true, tint, className }) {
+export default function ObjectGlyph({ type, size = 16, dropShadow = true, tint, outline = false, className }) {
   const url = iconUrlForType(type);
   const dimension = typeof size === 'number' ? `${size}px` : size;
 
@@ -27,7 +27,15 @@ export default function ObjectGlyph({ type, size = 16, dropShadow = true, tint, 
   // overlay but keeps the artwork's own luminosity, and the opacity decides
   // how far towards the theme it goes — so objects stay recognisably
   // themselves and are only nudged towards the palette.
-  const shadow = dropShadow ? 'drop-shadow(0 1px 0 rgba(0,0,0,0.45))' : undefined;
+  // A pale rim plus a tight dark shadow. The rim is what separates an
+  // object from a busy background — a grey shark or green crocodile on the
+  // water texture was nearly invisible without it. On light terrain the rim
+  // simply disappears, so it costs nothing there.
+  // Kept to two shadows deliberately: blurred drop-shadows are the most
+  // expensive filter on mobile Safari and a big board carries dozens.
+  const shadow = dropShadow
+    ? 'drop-shadow(0 0 1.5px rgba(255,255,255,0.95)) drop-shadow(0 1px 1px rgba(0,0,0,0.55))'
+    : undefined;
 
   return (
     <span

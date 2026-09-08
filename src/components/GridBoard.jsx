@@ -5,6 +5,7 @@ import { buildBlockedCellSet } from '../utils/blocking';
 import { buildPatternStyle } from '../utils/areaPatterns';
 import { TERRAIN_COLOR } from '../data/objectLibrary';
 import { terrainTextureStyle, hasTerrainTexture } from '../data/terrainTextures';
+import { UNTINTED_TYPES } from '../data/objectIcons';
 import CellMarks from './CellMarks';
 import ObjectGlyph from './ObjectGlyph';
 
@@ -288,7 +289,7 @@ export default function GridBoard({
                   )}
                   {obj && !spanCells.has(key) && !doorCells.has(key) && (
                     <span className="cell-object">
-                      <ObjectGlyph type={obj} size="100%" tint={areaBase} />
+                      <ObjectGlyph type={obj} size="100%" tint={UNTINTED_TYPES.has(obj) ? null : areaBase} outline={UNTINTED_TYPES.has(obj)} />
                     </span>
                   )}
                   <CellMarks people={people} mark={session?.marks?.[key]} fixedPerson={fixedByCell[key]} />
@@ -345,7 +346,7 @@ export default function GridBoard({
               }}
             >
               <span className="span-inner" style={inner}>
-                <ObjectGlyph type={sp.type} size="100%" tint={base} />
+                <ObjectGlyph type={sp.type} size="100%" tint={UNTINTED_TYPES.has(sp.type) ? null : base} outline={UNTINTED_TYPES.has(sp.type)} />
               </span>
             </span>
           );
