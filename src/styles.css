@@ -177,16 +177,28 @@ h1, h2, h3 { margin: 0.2em 0; font-family: 'Fredoka', 'Nunito', sans-serif; }
 }
 .cell-x {
   position: absolute; inset: 0; z-index: 5;
-  display: flex; align-items: center; justify-content: center;
-  color: #000; font-size: 24px; font-weight: 900;
-  /* Sits above multi-cell spans (beds, boats), which are drawn as a layer
-     over the cells rather than inside them. The light plate behind the
-     glyph keeps it legible on top of any artwork or terrain. */
-  text-shadow:
-    -1.5px -1.5px 0 #fff, 1.5px -1.5px 0 #fff,
-    -1.5px  1.5px 0 #fff, 1.5px  1.5px 0 #fff,
-     0 -1.5px 0 #fff, 0 1.5px 0 #fff, -1.5px 0 0 #fff, 1.5px 0 0 #fff;
+  pointer-events: none;
+  /* Drawn as two full-cell diagonals rather than a solid glyph. A big X
+     with a heavy halo covered most of the cell, so you could no longer tell
+     WHAT had been ruled out — which matters, because the object is half the
+     clue. Two thin lines read as "crossed" just as fast while leaving the
+     artwork underneath completely legible. */
 }
+.cell-x::before,
+.cell-x::after {
+  content: '';
+  position: absolute;
+  left: -22%;
+  top: 50%;
+  width: 144%;
+  height: 3px;
+  border-radius: 2px;
+  background: rgba(10, 15, 30, 0.88);
+  /* Thin white edging so the lines stay visible on dark terrain too. */
+  box-shadow: 0 0 0 1.5px rgba(255, 255, 255, 0.9);
+}
+.cell-x::before { transform: translateY(-50%) rotate(45deg); }
+.cell-x::after  { transform: translateY(-50%) rotate(-45deg); }
 /* Dimming a crossed-out cell used to use `filter`, but a filter creates a
    STACKING CONTEXT. That trapped the cross inside the cell's own layer, so
    its z-index no longer competed with the multi-cell object drawn over the
