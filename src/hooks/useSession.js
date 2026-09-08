@@ -315,15 +315,22 @@ export function useSession(sessionId, user) {
   // Wipes all marks/fixed data and reopens the puzzle for everyone who ever
   // played this session.
   const restartSession = useCallback(async (puzzle) => {
-    if (!session) return;
+    if (!sessionId) throw new Error('No session to restart yet.');
+    // Deliberately does NOT bail when `session` is still loading: it only
+    // needs the id. It used to return silently in that case, which looked
+    // exactly like a dead button. Errors now propagate so the caller can
+    // tell the player instead of swallowing them.
     await updateDoc(sessionRef(sessionId), {
       marks: {},
       fixed: {},
       usedClues: {},
       status: 'active',
       completedAt: deleteField(),
+      updatedAt: serverTimestamp(),
     });
-    const everIds = session.everPlayers || [];
+    const everIds = session?.everPlayers?.length
+      ? session.everPlayers
+      : (user?.id ? [user.id] : []);
     await Promise.all(everIds.map((id) =>
       setDoc(progressRef(id, puzzle.id), {
         sessionId,
@@ -332,7 +339,7 @@ export function useSession(sessionId, user) {
         completedAt: deleteField(),
       }, { merge: true })
     ));
-  }, [session, sessionId]);
+  }, [session, sessionId, user]);
 
   return {
     session, loading,
