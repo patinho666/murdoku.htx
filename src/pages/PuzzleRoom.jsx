@@ -27,6 +27,7 @@ export default function PuzzleRoom() {
   const [activePerson, setActivePerson] = useState(null);
   const [tool, setTool] = useState('mark');
   const [wrongFlash, setWrongFlash] = useState(false);
+  const [restarting, setRestarting] = useState(false);
   const [lockedPeople, setLockedPeople] = useState(() => new Set());
   const [history, setHistory] = useState([]);
 
@@ -285,14 +286,23 @@ export default function PuzzleRoom() {
           </button>
           <button
             className="restart-btn"
-            onClick={() => {
-              if (window.confirm('Restart this murdoku? All marks will be erased for everyone.')) {
+            disabled={restarting || !sessionId}
+            onClick={async () => {
+              if (!window.confirm('Restart this murdoku? All marks will be erased for everyone.')) return;
+              setRestarting(true);
+              try {
                 setHistory([]);
-                restartSession(puzzle);
+                await restartSession(puzzle);
+              } catch (err) {
+                // Previously this failed silently, which is indistinguishable
+                // from the button not working at all.
+                window.alert(`Could not restart: ${err?.message || err}`);
+              } finally {
+                setRestarting(false);
               }
             }}
           >
-            Restart
+            {restarting ? 'Restarting…' : 'Restart'}
           </button>
         </div>
         {wrongFlash && <div className="wrong-banner">✗ That's not the solution. Keep trying.</div>}
