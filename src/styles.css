@@ -56,7 +56,13 @@ h1, h2, h3 { margin: 0.2em 0; font-family: 'Fredoka', 'Nunito', sans-serif; }
 .join-form button:disabled { opacity: 0.4; }
 
 /* ---------- Room ---------- */
-.room-screen { background: #0f172a; min-height: 100vh; color: white; padding-bottom: 40px; }
+/* The last row used to sit ~40px from the bottom of the viewport, which on
+   a phone is under Safari's toolbar and any fixed site badge — the Restart
+   button was there but effectively untappable. This keeps it clear. */
+.room-screen {
+  background: #0f172a; min-height: 100vh; color: white;
+  padding-bottom: calc(140px + env(safe-area-inset-bottom, 0px));
+}
 .room-header { display: flex; align-items: center; justify-content: space-between; padding: 12px 14px; gap: 8px; }
 .room-header h1 { font-size: 18px; flex: 1; text-align: center; }
 .room-meta { display: flex; gap: 10px; align-items: center; padding: 0 14px 10px; flex-wrap: wrap; font-size: 13px; }
