@@ -33,9 +33,17 @@ export default function ObjectGlyph({ type, size = 16, dropShadow = true, tint, 
   // simply disappears, so it costs nothing there.
   // Kept to two shadows deliberately: blurred drop-shadows are the most
   // expensive filter on mobile Safari and a big board carries dozens.
-  const shadow = dropShadow
-    ? 'drop-shadow(0 0 1.5px rgba(255,255,255,0.95)) drop-shadow(0 1px 1px rgba(0,0,0,0.55))'
-    : undefined;
+  // `outline` marks the creatures. Their contour is now BAKED INTO THE SVG
+  // (see src/assets/icons/shark.svg etc.), which traces the silhouette far
+  // more precisely than stacked CSS glows, and also applies in the
+  // thumbnail and glossary where these CSS filters do not reach. So here
+  // they only get a contrast lift — piling another halo on top produced a
+  // muddy double rim.
+  const shadow = outline
+    ? 'contrast(1.18) saturate(1.25) drop-shadow(0 2px 2px rgba(0,0,0,0.5))'
+    : (dropShadow
+      ? 'drop-shadow(0 0 1.5px rgba(255,255,255,0.95)) drop-shadow(0 1px 1px rgba(0,0,0,0.55))'
+      : undefined);
 
   return (
     <span
