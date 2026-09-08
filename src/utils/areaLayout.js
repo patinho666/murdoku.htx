@@ -22,15 +22,29 @@ export function buildAreaLayout(puzzle) {
   // Label sits on the area's bottom-most row, left-most cell of that row —
   // matching how the reference boards anchor labels at an area's bottom
   // edge and let the text run rightwards from there.
+  //
+  // It prefers a cell with NO object in it. A label printed on top of a
+  // chair or a barrel is hard to read and makes the board look cluttered,
+  // and an area almost always has a free cell to use instead. If every cell
+  // of the area is occupied, it falls back to the plain bottom-left cell so
+  // the area is still named rather than going anonymous.
+  const occupied = new Set();
+  for (const o of puzzle.objects || []) {
+    for (const c of o.cells) occupied.add(cellKey(c[0], c[1]));
+  }
+
+  const bottomLeftMost = (cells) => cells.reduce((best, cur) => {
+    if (!best) return cur;
+    if (cur[0] > best[0]) return cur;
+    if (cur[0] === best[0] && cur[1] < best[1]) return cur;
+    return best;
+  }, null);
+
   const labelAnchor = {};
   areaNames.forEach((name) => {
     const cells = puzzle.areas[name].cells;
-    const anchor = cells.reduce((best, cur) => {
-      if (!best) return cur;
-      if (cur[0] > best[0]) return cur;
-      if (cur[0] === best[0] && cur[1] < best[1]) return cur;
-      return best;
-    }, null);
+    const free = cells.filter(([r, c]) => !occupied.has(cellKey(r, c)));
+    const anchor = bottomLeftMost(free.length ? free : cells);
     labelAnchor[cellKey(anchor[0], anchor[1])] = name;
   });
 
